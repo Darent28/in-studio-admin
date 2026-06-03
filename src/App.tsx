@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider, CssBaseline } from '@mui/material';
-import { theme } from './lib/theme';
+import { darkTheme, lightTheme } from './lib/theme';
 import { queryClient } from './lib/queryClient';
 import { AuthProvider, useAuthContext } from './context/AuthContext';
 import { AdminLayout } from './shared/components/AdminLayout';
@@ -19,11 +19,26 @@ function AppRoutes() {
   const { isAuthenticated } = useAuthContext();
   return (
     <Routes>
-      <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />} />
+      <Route
+        path="/login"
+        element={
+          isAuthenticated ? (
+            <Navigate to="/" replace />
+          ) : (
+            <ThemeProvider theme={darkTheme}>
+              <CssBaseline />
+              <LoginPage />
+            </ThemeProvider>
+          )
+        }
+      />
       <Route
         element={
           <ProtectedRoute>
-            <AdminLayout />
+            <ThemeProvider theme={lightTheme}>
+              <CssBaseline />
+              <AdminLayout />
+            </ThemeProvider>
           </ProtectedRoute>
         }
       >
@@ -37,16 +52,13 @@ function AppRoutes() {
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <BrowserRouter>
-            <AppRoutes />
-          </BrowserRouter>
-        </AuthProvider>
-      </QueryClientProvider>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 
