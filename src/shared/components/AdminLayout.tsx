@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import { AppBar, Toolbar, Typography, Box, Tabs, Tab, Avatar, Menu, MenuItem, IconButton, Divider } from '@mui/material';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
-import { Logout, People } from '@mui/icons-material';
+import { Logout, People, MeetingRoom, CardMembership, EventNote } from '@mui/icons-material';
 import { useAuthContext } from '../../context/AuthContext';
 
 const NAV_ITEMS = [
   { label: 'Users', path: '/users', icon: <People fontSize="small" /> },
+  { label: 'Rooms', path: '/rooms', icon: <MeetingRoom fontSize="small" /> },
+  { label: 'Plans', path: '/plans', icon: <CardMembership fontSize="small" /> },
+  { label: 'Sessions', path: '/sessions', icon: <EventNote fontSize="small" /> },
 ];
 
 export function AdminLayout() {

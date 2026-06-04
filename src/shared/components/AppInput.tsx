@@ -44,6 +44,7 @@ export function AppInput({
       error={error}
       placeholder={placeholder}
       fullWidth
+      slotProps={type === 'time' || type === 'date' || type === 'datetime-local' ? { inputLabel: { shrink: true } } : undefined}
       sx={sx}
     />
   );

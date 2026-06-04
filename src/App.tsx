@@ -9,6 +9,9 @@ import { AdminLayout } from './shared/components/AdminLayout';
 import { LoginPage } from './pages/LoginPage';
 import { HomePage } from './pages/HomePage';
 import { UsersPage } from './pages/UsersPage';
+import { RoomsPage } from './pages/RoomsPage';
+import { PlansPage } from './pages/PlansPage';
+import { ClassSessionsPage } from './pages/ClassSessionsPage';
 
 function ProtectedRoute({ children }: { children: React.ReactElement }) {
   const { isAuthenticated } = useAuthContext();
@@ -44,6 +47,9 @@ function AppRoutes() {
       >
         <Route index element={<HomePage />} />
         <Route path="users" element={<UsersPage />} />
+        <Route path="rooms" element={<RoomsPage />} />
+        <Route path="plans" element={<PlansPage />} />
+        <Route path="sessions" element={<ClassSessionsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
