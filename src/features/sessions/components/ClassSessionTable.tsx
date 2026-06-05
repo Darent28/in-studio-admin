@@ -48,8 +48,6 @@ export function ClassSessionTable({ sessions, loading, onEdit, onDelete }: Class
             <TableCell>Start</TableCell>
             <TableCell>End</TableCell>
             <TableCell>Days</TableCell>
-            <TableCell>Capacity</TableCell>
-            <TableCell>Booked</TableCell>
             <TableCell>Status</TableCell>
             <TableCell align="right" />
           </TableRow>
@@ -64,8 +62,6 @@ export function ClassSessionTable({ sessions, loading, onEdit, onDelete }: Class
               <TableCell sx={{ fontSize: 12 }}>
                 {s.days?.length ? s.days.map((d) => DAY_ABBR[d] ?? d).join(', ') : '—'}
               </TableCell>
-              <TableCell>{s.capacity}</TableCell>
-              <TableCell>{s.bookedCount}</TableCell>
               <TableCell><Chip label={s.status} size="small" color={STATUS_COLORS[s.status]} sx={{ fontSize: 11, fontWeight: 600 }} /></TableCell>
               <TableCell align="right"><RowMenu session={s} onEdit={onEdit} onDelete={onDelete} /></TableCell>
             </TableRow>

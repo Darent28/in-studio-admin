@@ -22,7 +22,9 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body.detail ?? body.message ?? 'Request failed');
+    const violations: string[] | undefined = body.violations;
+    const detail = violations?.length ? violations.join(', ') : (body.detail ?? body.message ?? 'Request failed');
+    throw new Error(detail);
   }
   if (res.status === 204) return undefined as T;
   return res.json();

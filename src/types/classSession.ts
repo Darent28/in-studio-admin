@@ -12,8 +12,7 @@ export interface ClassSession {
   startTime: string;
   endTime: string;
   days: DayOfWeek[];
-  capacity: number;
-  bookedCount: number;
+  scheduledCount: number;
   status: SessionStatus;
   notes: string | null;
   createdAt: string;
@@ -25,7 +24,6 @@ export interface ClassSessionPayload {
   startTime: string;
   endTime: string;
   days: DayOfWeek[];
-  capacity: number;
   status?: SessionStatus;
   notes?: string;
 }

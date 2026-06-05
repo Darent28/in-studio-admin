@@ -33,7 +33,6 @@ interface FormState {
   roomId: number;
   startTime: string;
   endTime: string;
-  capacity: number;
   status: SessionStatus;
   days: DayOfWeek[];
   notes: string;
@@ -44,7 +43,6 @@ const EMPTY: FormState = {
   roomId: 0,
   startTime: '',
   endTime: '',
-  capacity: 10,
   status: 'SCHEDULED',
   days: [],
   notes: '',
@@ -65,7 +63,6 @@ export function ClassSessionFormModal({ open, onClose, onSubmit, session, loadin
               roomId: session.roomId,
               startTime: session.startTime,
               endTime: session.endTime,
-              capacity: session.capacity,
               status: session.status,
               days: session.days ?? [],
               notes: session.notes ?? '',
@@ -81,7 +78,6 @@ export function ClassSessionFormModal({ open, onClose, onSubmit, session, loadin
       roomId: form.roomId,
       startTime: form.startTime,
       endTime: form.endTime,
-      capacity: form.capacity,
       status: form.status,
       days: form.days,
     };
@@ -145,7 +141,7 @@ export function ClassSessionFormModal({ open, onClose, onSubmit, session, loadin
           </Typography>
           <ToggleButtonGroup
             value={form.days}
-            onChange={(_, newDays: DayOfWeek[]) => setForm((p) => ({ ...p, days: newDays }))}
+            onChange={(_, newDays: DayOfWeek[] | null) => setForm((p) => ({ ...p, days: newDays ?? [] }))}
             sx={{ flexWrap: 'wrap', gap: 0.5 }}
           >
             {DAYS.map((d) => (
@@ -161,27 +157,18 @@ export function ClassSessionFormModal({ open, onClose, onSubmit, session, loadin
           </ToggleButtonGroup>
         </Box>
 
-        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-          <AppInput
-            label="Capacity"
-            value={String(form.capacity)}
-            onChange={(v) => setForm((p) => ({ ...p, capacity: Number(v) }))}
-            type="number"
-            required
-          />
-          <FormControl fullWidth size="small">
-            <InputLabel>Status</InputLabel>
-            <Select
-              value={form.status}
-              label="Status"
-              onChange={(e) => setForm((p) => ({ ...p, status: e.target.value as SessionStatus }))}
-            >
-              <MenuItem value="SCHEDULED">Scheduled</MenuItem>
-              <MenuItem value="CANCELLED">Cancelled</MenuItem>
-              <MenuItem value="COMPLETED">Completed</MenuItem>
-            </Select>
-          </FormControl>
-        </Box>
+        <FormControl fullWidth size="small">
+          <InputLabel>Status</InputLabel>
+          <Select
+            value={form.status}
+            label="Status"
+            onChange={(e) => setForm((p) => ({ ...p, status: e.target.value as SessionStatus }))}
+          >
+            <MenuItem value="SCHEDULED">Scheduled</MenuItem>
+            <MenuItem value="CANCELLED">Cancelled</MenuItem>
+            <MenuItem value="COMPLETED">Completed</MenuItem>
+          </Select>
+        </FormControl>
 
         <AppInput
           label="Notes (optional)"
