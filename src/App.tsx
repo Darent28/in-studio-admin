@@ -12,6 +12,8 @@ import { UsersPage } from './pages/UsersPage';
 import { RoomsPage } from './pages/RoomsPage';
 import { PlansPage } from './pages/PlansPage';
 import { ClassSessionsPage } from './pages/ClassSessionsPage';
+import { InstructorsPage } from './pages/InstructorsPage';
+import { MembershipsPage } from './pages/MembershipsPage';
 
 function ProtectedRoute({ children }: { children: React.ReactElement }) {
   const { isAuthenticated } = useAuthContext();
@@ -47,6 +49,8 @@ function AppRoutes() {
       >
         <Route index element={<HomePage />} />
         <Route path="users" element={<UsersPage />} />
+        <Route path="instructors" element={<InstructorsPage />} />
+        <Route path="memberships" element={<MembershipsPage />} />
         <Route path="rooms" element={<RoomsPage />} />
         <Route path="plans" element={<PlansPage />} />
         <Route path="sessions" element={<ClassSessionsPage />} />

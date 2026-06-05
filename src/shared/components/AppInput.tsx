@@ -1,5 +1,6 @@
 import { TextField } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material';
+import type { ReactNode } from 'react';
 
 interface AppInputProps {
   label: string;
@@ -14,6 +15,7 @@ interface AppInputProps {
   error?: boolean;
   placeholder?: string;
   sx?: SxProps<Theme>;
+  startAdornment?: ReactNode;
 }
 
 export function AppInput({
@@ -29,7 +31,9 @@ export function AppInput({
   error,
   placeholder,
   sx,
+  startAdornment,
 }: AppInputProps) {
+  const needsShrink = type === 'time' || type === 'date' || type === 'datetime-local';
   return (
     <TextField
       label={label}
@@ -44,7 +48,10 @@ export function AppInput({
       error={error}
       placeholder={placeholder}
       fullWidth
-      slotProps={type === 'time' || type === 'date' || type === 'datetime-local' ? { inputLabel: { shrink: true } } : undefined}
+      slotProps={{
+        ...(needsShrink ? { inputLabel: { shrink: true } } : {}),
+        ...(startAdornment ? { input: { startAdornment } } : {}),
+      }}
       sx={sx}
     />
   );

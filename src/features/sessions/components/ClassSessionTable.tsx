@@ -43,6 +43,7 @@ export function ClassSessionTable({ sessions, loading, onEdit, onDelete }: Class
       <Table>
         <TableHead>
           <TableRow sx={{ '& th': { fontWeight: 700, color: 'text.secondary', fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5 } }}>
+            <TableCell>Title</TableCell>
             <TableCell>Instructor</TableCell>
             <TableCell>Room</TableCell>
             <TableCell>Start</TableCell>
@@ -55,6 +56,7 @@ export function ClassSessionTable({ sessions, loading, onEdit, onDelete }: Class
         <TableBody>
           {sessions.map((s) => (
             <TableRow key={s.sessionId} hover>
+              <TableCell sx={{ fontWeight: 500 }}>{s.title ?? '—'}</TableCell>
               <TableCell>{s.instructorFirstName} {s.instructorLastName}</TableCell>
               <TableCell>{s.roomName}</TableCell>
               <TableCell sx={{ fontSize: 13 }}>{s.startTime}</TableCell>

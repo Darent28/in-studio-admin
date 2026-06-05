@@ -34,6 +34,7 @@ interface FormState {
   roomId: number;
   startTime: string;
   endTime: string;
+  title: string;
   status: SessionStatus;
   days: DayOfWeek[];
   notes: string;
@@ -45,6 +46,7 @@ const EMPTY: FormState = {
   roomId: 0,
   startTime: '',
   endTime: '',
+  title: '',
   status: 'SCHEDULED',
   days: [],
   notes: '',
@@ -66,6 +68,7 @@ export function ClassSessionFormModal({ open, onClose, onSubmit, session, loadin
               roomId: session.roomId,
               startTime: session.startTime,
               endTime: session.endTime,
+              title: session.title ?? '',
               status: session.status,
               days: session.days ?? [],
               notes: session.notes ?? '',
@@ -93,6 +96,7 @@ export function ClassSessionFormModal({ open, onClose, onSubmit, session, loadin
       status: form.status,
       days: form.days,
     };
+    if (form.title) payload.title = form.title;
     if (form.notes) payload.notes = form.notes;
     if (form.blockedSeats.length) payload.blockedSeats = form.blockedSeats;
     await onSubmit(payload);
@@ -102,6 +106,12 @@ export function ClassSessionFormModal({ open, onClose, onSubmit, session, loadin
     <AppModal open={open} onClose={onClose} title={isEdit ? 'Edit Session' : 'Create Session'}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
         {error && <Alert severity="error" sx={{ borderRadius: 2 }}>{error}</Alert>}
+
+        <AppInput
+          label="Title (optional)"
+          value={form.title}
+          onChange={(v) => setForm((p) => ({ ...p, title: v }))}
+        />
 
         <FormControl fullWidth size="small">
           <InputLabel>Instructor</InputLabel>

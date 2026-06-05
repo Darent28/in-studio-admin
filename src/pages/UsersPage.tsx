@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { Box, Typography, Alert, Snackbar } from '@mui/material';
+import { useState, useMemo } from 'react';
+import { Box, Typography, Alert, Snackbar, TextField, InputAdornment } from '@mui/material';
+import { Search } from '@mui/icons-material';
 import { AppButton } from '../shared/components/AppButton';
 import { ConfirmDialog } from '../shared/components/ConfirmDialog';
 import { UserTable } from '../features/users/components/UserTable';
@@ -18,6 +19,17 @@ export function UsersPage() {
   const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null);
   const [formError, setFormError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [search, setSearch] = useState('');
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return users;
+    return users.filter((u: AdminUser) =>
+      u.firstName.toLowerCase().includes(q) ||
+      u.lastName.toLowerCase().includes(q) ||
+      u.email.toLowerCase().includes(q)
+    );
+  }, [users, search]);
 
   const openCreate = () => { setSelected(null); setFormError(''); setFormOpen(true); };
   const openEdit = (user: AdminUser) => { setSelected(user); setFormError(''); setFormOpen(true); };
@@ -44,7 +56,7 @@ export function UsersPage() {
       await deleteUser.mutateAsync(deleteTarget.userId);
       setSuccessMsg('User deleted successfully.');
       setDeleteTarget(null);
-    } catch (err: any) {
+    } catch {
       setDeleteTarget(null);
     }
   };
@@ -53,7 +65,7 @@ export function UsersPage() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
         <Box>
           <Typography variant="h5" sx={{ fontWeight: 700 }}>Users</Typography>
           <Typography variant="body2" color="text.secondary">{users.length} total users</Typography>
@@ -61,8 +73,19 @@ export function UsersPage() {
         <AppButton text="Create User" onClick={openCreate} />
       </Box>
 
+      <Box sx={{ mb: 2 }}>
+        <TextField
+          size="small"
+          placeholder="Search by name or email…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          sx={{ width: 280 }}
+          slotProps={{ input: { startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment> } }}
+        />
+      </Box>
+
       <UserTable
-        users={users}
+        users={filtered}
         loading={isLoading}
         onEdit={openEdit}
         onDelete={setDeleteTarget}

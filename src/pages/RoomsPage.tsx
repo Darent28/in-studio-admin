@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { Box, Typography, Alert, Snackbar } from '@mui/material';
+import { useState, useMemo } from 'react';
+import { Box, Typography, Alert, Snackbar, TextField, InputAdornment } from '@mui/material';
+import { Search } from '@mui/icons-material';
 import { AppButton } from '../shared/components/AppButton';
 import { ConfirmDialog } from '../shared/components/ConfirmDialog';
 import { RoomTable } from '../features/rooms/components/RoomTable';
@@ -18,6 +19,16 @@ export function RoomsPage() {
   const [deleteTarget, setDeleteTarget] = useState<Room | null>(null);
   const [formError, setFormError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [search, setSearch] = useState('');
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return rooms;
+    return rooms.filter((r: Room) =>
+      r.name.toLowerCase().includes(q) ||
+      (r.location ?? '').toLowerCase().includes(q)
+    );
+  }, [rooms, search]);
 
   const openCreate = () => { setSelected(null); setFormError(''); setFormOpen(true); };
   const openEdit = (room: Room) => { setSelected(room); setFormError(''); setFormOpen(true); };
@@ -52,7 +63,7 @@ export function RoomsPage() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
         <Box>
           <Typography variant="h5" sx={{ fontWeight: 700 }}>Rooms</Typography>
           <Typography variant="body2" color="text.secondary">{rooms.length} total rooms</Typography>
@@ -60,7 +71,18 @@ export function RoomsPage() {
         <AppButton text="Create Room" onClick={openCreate} />
       </Box>
 
-      <RoomTable rooms={rooms} loading={isLoading} onEdit={openEdit} onDelete={setDeleteTarget} />
+      <Box sx={{ mb: 2 }}>
+        <TextField
+          size="small"
+          placeholder="Search by name or location…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          sx={{ width: 280 }}
+          slotProps={{ input: { startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment> } }}
+        />
+      </Box>
+
+      <RoomTable rooms={filtered} loading={isLoading} onEdit={openEdit} onDelete={setDeleteTarget} />
 
       <RoomFormModal
         open={formOpen}
