@@ -5,6 +5,9 @@ export interface Room {
   location: string | null;
   equipment: string | null;
   active: boolean;
+  layoutRows: number;
+  layoutCols: number;
+  layoutData: string | null;
 }
 
 export interface RoomPayload {
@@ -13,4 +16,7 @@ export interface RoomPayload {
   location?: string;
   equipment?: string;
   active?: boolean;
+  layoutRows?: number;
+  layoutCols?: number;
+  layoutData?: string;
 }

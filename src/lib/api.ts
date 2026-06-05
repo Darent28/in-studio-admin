@@ -15,7 +15,6 @@ export interface AuthResponse {
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const { headers: extraHeaders, ...restOptions } = options ?? {};
-  console.log('[api]', options?.method ?? 'GET', `${BASE}${path}`);
   const res = await fetch(`${BASE}${path}`, {
     headers: { 'Content-Type': 'application/json', ...(extraHeaders ?? {}) },
     ...restOptions,

@@ -26,4 +26,5 @@ export interface ClassSessionPayload {
   days: DayOfWeek[];
   status?: SessionStatus;
   notes?: string;
+  blockedSeats?: string[];
 }

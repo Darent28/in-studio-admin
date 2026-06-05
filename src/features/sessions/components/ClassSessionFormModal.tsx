@@ -3,6 +3,7 @@ import { Box, Alert, FormControl, InputLabel, Select, MenuItem, ToggleButtonGrou
 import { AppModal } from '../../../shared/components/AppModal';
 import { AppInput } from '../../../shared/components/AppInput';
 import { AppButton } from '../../../shared/components/AppButton';
+import { SeatMap } from '../../../shared/components/SeatMap';
 import { useRooms } from '../../rooms/hooks/useRooms';
 import { useInstructors } from '../hooks/useInstructors';
 import type { Room } from '../../../types/room';
@@ -36,6 +37,7 @@ interface FormState {
   status: SessionStatus;
   days: DayOfWeek[];
   notes: string;
+  blockedSeats: string[];
 }
 
 const EMPTY: FormState = {
@@ -46,6 +48,7 @@ const EMPTY: FormState = {
   status: 'SCHEDULED',
   days: [],
   notes: '',
+  blockedSeats: [],
 };
 
 export function ClassSessionFormModal({ open, onClose, onSubmit, session, loading, error }: ClassSessionFormModalProps) {
@@ -66,11 +69,20 @@ export function ClassSessionFormModal({ open, onClose, onSubmit, session, loadin
               status: session.status,
               days: session.days ?? [],
               notes: session.notes ?? '',
+              blockedSeats: [],
             }
           : EMPTY
       );
     }
   }, [open, session]);
+
+  const toggleSeat = (seat: string) =>
+    setForm((p) => ({
+      ...p,
+      blockedSeats: p.blockedSeats.includes(seat)
+        ? p.blockedSeats.filter((s) => s !== seat)
+        : [...p.blockedSeats, seat],
+    }));
 
   const handleSubmit = async () => {
     const payload: ClassSessionPayload = {
@@ -82,6 +94,7 @@ export function ClassSessionFormModal({ open, onClose, onSubmit, session, loadin
       days: form.days,
     };
     if (form.notes) payload.notes = form.notes;
+    if (form.blockedSeats.length) payload.blockedSeats = form.blockedSeats;
     await onSubmit(payload);
   };
 
@@ -110,13 +123,38 @@ export function ClassSessionFormModal({ open, onClose, onSubmit, session, loadin
           <Select
             value={form.roomId || ''}
             label="Room"
-            onChange={(e) => setForm((p) => ({ ...p, roomId: Number(e.target.value) }))}
+            onChange={(e) =>
+              setForm((p) => ({ ...p, roomId: Number(e.target.value), blockedSeats: [] }))
+            }
           >
             {rooms.map((r: Room) => (
               <MenuItem key={r.roomId} value={r.roomId}>{r.name}</MenuItem>
             ))}
           </Select>
         </FormControl>
+
+        {(() => {
+          const room = rooms.find((r: Room) => r.roomId === form.roomId);
+          if (!room || !room.layoutRows || !room.layoutCols) return null;
+          let activeSeats: string[] | undefined;
+          if (room.layoutData) {
+            try { activeSeats = JSON.parse(room.layoutData); } catch { activeSeats = undefined; }
+          }
+          return (
+            <Box>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                Select blocked seats ({form.blockedSeats.length} blocked)
+              </Typography>
+              <SeatMap
+                rows={room.layoutRows}
+                cols={room.layoutCols}
+                activeSeats={activeSeats}
+                selected={form.blockedSeats}
+                onToggle={toggleSeat}
+              />
+            </Box>
+          );
+        })()}
 
         <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
           <AppInput
