@@ -7,22 +7,25 @@ import { MembershipTable } from '../features/memberships/components/MembershipTa
 import { AssignMembershipModal } from '../features/memberships/components/AssignMembershipModal';
 import { AdjustCreditsModal } from '../features/memberships/components/AdjustCreditsModal';
 import { ChangeStatusModal } from '../features/memberships/components/ChangeStatusModal';
+import { ChangePeriodModal } from '../features/memberships/components/ChangePeriodModal';
 import {
   useMemberships, useCreateMembership, useAdjustCredits,
-  useChangeMembershipStatus, useDeleteMembership,
+  useChangeMembershipPeriod, useChangeMembershipStatus, useDeleteMembership,
 } from '../features/memberships/hooks/useMemberships';
-import type { Membership, MembershipPayload, MembershipStatus } from '../types/membership';
+import type { Membership, MembershipPayload, ChangePeriodPayload, MembershipStatus } from '../types/membership';
 
 export function MembershipsPage() {
   const { data: memberships = [], isLoading } = useMemberships();
   const createMembership = useCreateMembership();
   const adjustCredits = useAdjustCredits();
+  const changePeriod = useChangeMembershipPeriod();
   const changeStatus = useChangeMembershipStatus();
   const deleteMembership = useDeleteMembership();
 
   const [assignOpen, setAssignOpen] = useState(false);
   const [creditTarget, setCreditTarget] = useState<Membership | null>(null);
   const [statusTarget, setStatusTarget] = useState<Membership | null>(null);
+  const [periodTarget, setPeriodTarget] = useState<Membership | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Membership | null>(null);
   const [formError, setFormError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -38,8 +41,7 @@ export function MembershipsPage() {
       return (
         m.userFirstName.toLowerCase().includes(q) ||
         m.userLastName.toLowerCase().includes(q) ||
-        m.userEmail.toLowerCase().includes(q) ||
-        m.planName.toLowerCase().includes(q)
+        m.userEmail.toLowerCase().includes(q)
       );
     });
   }, [memberships, search, filterStatus]);
@@ -60,6 +62,16 @@ export function MembershipsPage() {
       await adjustCredits.mutateAsync({ id: creditTarget.membershipId, payload: { delta } });
       setSuccessMsg('Credits updated.');
       setCreditTarget(null);
+    } catch (err: any) { setFormError(err.message ?? 'Something went wrong.'); }
+  };
+
+  const handleChangePeriod = async (payload: ChangePeriodPayload) => {
+    if (!periodTarget) return;
+    setFormError('');
+    try {
+      await changePeriod.mutateAsync({ id: periodTarget.membershipId, payload });
+      setSuccessMsg('Period updated.');
+      setPeriodTarget(null);
     } catch (err: any) { setFormError(err.message ?? 'Something went wrong.'); }
   };
 
@@ -99,7 +111,6 @@ export function MembershipsPage() {
         <AppButton text="Assign Membership" onClick={() => { setFormError(''); setAssignOpen(true); }} />
       </Box>
 
-      {/* Filters */}
       <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
         <TextField
           size="small"
@@ -126,6 +137,7 @@ export function MembershipsPage() {
         loading={isLoading}
         onAdjustCredits={(m) => { setFormError(''); setCreditTarget(m); }}
         onChangeStatus={(m) => { setFormError(''); setStatusTarget(m); }}
+        onChangePeriod={(m) => { setFormError(''); setPeriodTarget(m); }}
         onDelete={setDeleteTarget}
       />
 
@@ -146,6 +158,15 @@ export function MembershipsPage() {
         error={formError}
       />
 
+      <ChangePeriodModal
+        open={!!periodTarget}
+        onClose={() => setPeriodTarget(null)}
+        onSubmit={handleChangePeriod}
+        membership={periodTarget}
+        loading={changePeriod.isPending}
+        error={formError}
+      />
+
       <ChangeStatusModal
         open={!!statusTarget}
         onClose={() => setStatusTarget(null)}
@@ -160,7 +181,7 @@ export function MembershipsPage() {
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
         title="Delete Membership"
-        message={`Delete the ${deleteTarget?.planName} membership for ${deleteTarget?.userFirstName} ${deleteTarget?.userLastName}? This cannot be undone.`}
+        message={`Delete the membership for ${deleteTarget?.userFirstName} ${deleteTarget?.userLastName}? This cannot be undone.`}
         loading={deleteMembership.isPending}
       />
 

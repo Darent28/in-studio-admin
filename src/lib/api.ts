@@ -4,7 +4,8 @@ import type { Room, RoomPayload } from '../types/room';
 import type { Plan, PlanPayload } from '../types/plan';
 import type { ClassSession, ClassSessionPayload } from '../types/classSession';
 import type { Instructor, InstructorPayload, InstructorUpdatePayload, UserSearchResult } from '../types/instructor';
-import type { Membership, MembershipPayload, AdjustCreditsPayload, MembershipStatus } from '../types/membership';
+import type { Membership, MembershipPayload, AdjustCreditsPayload, ChangePeriodPayload, MembershipStatus } from '../types/membership';
+import type { Payment, PaymentPayload } from '../types/payment';
 
 const BASE = process.env.REACT_APP_API_URL ?? '/api';
 
@@ -99,6 +100,7 @@ export const api = {
       getByUser:     (userId: number, token: string) => request<Membership[]>(`/admin/memberships/user/${userId}`, { headers: authHeader(token) }),
       create:        (payload: MembershipPayload, token: string) => request<Membership>('/admin/memberships', { method: 'POST', body: JSON.stringify(payload), headers: authHeader(token) }),
       adjustCredits: (id: number, payload: AdjustCreditsPayload, token: string) => request<Membership>(`/admin/memberships/${id}/credits`, { method: 'PATCH', body: JSON.stringify(payload), headers: authHeader(token) }),
+      changePeriod:  (id: number, payload: ChangePeriodPayload, token: string) => request<Membership>(`/admin/memberships/${id}/period`, { method: 'PATCH', body: JSON.stringify(payload), headers: authHeader(token) }),
       changeStatus:  (id: number, status: MembershipStatus, token: string) => request<Membership>(`/admin/memberships/${id}/status?status=${status}`, { method: 'PATCH', headers: authHeader(token) }),
       delete:        (id: number, token: string) => request<void>(`/admin/memberships/${id}`, { method: 'DELETE', headers: authHeader(token) }),
     },
@@ -108,6 +110,12 @@ export const api = {
       create:  (payload: ClassSessionPayload, token: string) => request<ClassSession>('/admin/sessions', { method: 'POST', body: JSON.stringify(payload), headers: authHeader(token) }),
       update:  (id: number, payload: ClassSessionPayload, token: string) => request<ClassSession>(`/admin/sessions/${id}`, { method: 'PUT', body: JSON.stringify(payload), headers: authHeader(token) }),
       delete:  (id: number, token: string) => request<void>(`/admin/sessions/${id}`, { method: 'DELETE', headers: authHeader(token) }),
+    },
+
+    payments: {
+      getAll:   (token: string) => request<Payment[]>('/admin/payments', { headers: authHeader(token) }),
+      create:   (payload: PaymentPayload, token: string) => request<Payment>('/admin/payments', { method: 'POST', body: JSON.stringify(payload), headers: authHeader(token) }),
+      confirm:  (id: number, token: string) => request<Payment>(`/admin/payments/${id}/confirm`, { method: 'PATCH', headers: authHeader(token) }),
     },
   },
 };

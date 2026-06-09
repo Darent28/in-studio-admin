@@ -39,7 +39,7 @@ export function ChangeStatusModal({ open, onClose, onSubmit, membership, loading
             {membership.userFirstName} {membership.userLastName}
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            {membership.planName}
+            {membership.userEmail}
           </Typography>
         </Box>
 

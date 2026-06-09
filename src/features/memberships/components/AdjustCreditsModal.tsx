@@ -24,7 +24,6 @@ export function AdjustCreditsModal({ open, onClose, onSubmit, membership, loadin
   }, [open]);
 
   if (!membership) return null;
-  const isUnlimited = membership.planType === 'UNLIMITED';
   const delta = mode === 'add' ? Number(amount) : -Number(amount);
   const preview = Math.max(0, membership.creditsLeft + delta);
 
@@ -38,66 +37,54 @@ export function AdjustCreditsModal({ open, onClose, onSubmit, membership, loadin
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
         {error && <Alert severity="error" sx={{ borderRadius: 2 }}>{error}</Alert>}
 
-        {/* Membership info */}
         <Box sx={{ p: 1.5, bgcolor: 'grey.50', borderRadius: 2 }}>
           <Typography variant="body2" sx={{ fontWeight: 600 }}>
             {membership.userFirstName} {membership.userLastName}
           </Typography>
-          <Typography variant="caption" color="text.secondary">
-            {membership.planName} · {membership.planType}
-          </Typography>
+          <Typography variant="caption" color="text.secondary">{membership.userEmail}</Typography>
         </Box>
 
-        {isUnlimited ? (
-          <Alert severity="info" sx={{ borderRadius: 2 }}>This is an UNLIMITED plan — credits don't apply.</Alert>
-        ) : (
-          <>
-            {/* Current vs preview */}
-            <Box sx={{ display: 'flex', gap: 2, textAlign: 'center' }}>
-              <Box sx={{ flex: 1, p: 1.5, bgcolor: 'grey.50', borderRadius: 2 }}>
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>Current</Typography>
-                <Typography variant="h6" sx={{ fontWeight: 700 }}>{membership.creditsLeft}</Typography>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.disabled', fontSize: 20 }}>→</Box>
-              <Box sx={{ flex: 1, p: 1.5, bgcolor: mode === 'add' ? 'success.50' : 'warning.50', borderRadius: 2 }}>
-                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>After</Typography>
-                <Typography variant="h6" sx={{ fontWeight: 700, color: mode === 'add' ? 'success.main' : 'warning.main' }}>
-                  {preview}
-                </Typography>
-              </Box>
-            </Box>
+        <Box sx={{ display: 'flex', gap: 2, textAlign: 'center' }}>
+          <Box sx={{ flex: 1, p: 1.5, bgcolor: 'grey.50', borderRadius: 2 }}>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>Current</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 700 }}>{membership.creditsLeft}</Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.disabled', fontSize: 20 }}>→</Box>
+          <Box sx={{ flex: 1, p: 1.5, bgcolor: mode === 'add' ? 'success.50' : 'warning.50', borderRadius: 2 }}>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>After</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 700, color: mode === 'add' ? 'success.main' : 'warning.main' }}>
+              {preview}
+            </Typography>
+          </Box>
+        </Box>
 
-            <Divider />
+        <Divider />
 
-            <ToggleButtonGroup
-              value={mode}
-              exclusive
-              onChange={(_, v) => { if (v) setMode(v); }}
-              fullWidth
-              size="small"
-            >
-              <ToggleButton value="add" sx={{ gap: 0.5 }}>
-                <Add fontSize="small" /> Add credits
-              </ToggleButton>
-              <ToggleButton value="remove" sx={{ gap: 0.5 }}>
-                <Remove fontSize="small" /> Remove credits
-              </ToggleButton>
-            </ToggleButtonGroup>
+        <ToggleButtonGroup
+          value={mode}
+          exclusive
+          onChange={(_, v) => { if (v) setMode(v); }}
+          fullWidth
+          size="small"
+        >
+          <ToggleButton value="add" sx={{ gap: 0.5 }}>
+            <Add fontSize="small" /> Add credits
+          </ToggleButton>
+          <ToggleButton value="remove" sx={{ gap: 0.5 }}>
+            <Remove fontSize="small" /> Remove credits
+          </ToggleButton>
+        </ToggleButtonGroup>
 
-            <AppInput
-              label="Amount"
-              value={amount}
-              onChange={(v) => setAmount(v.replace(/\D/g, ''))}
-              type="number"
-            />
-          </>
-        )}
+        <AppInput
+          label="Amount"
+          value={amount}
+          onChange={(v) => setAmount(v.replace(/\D/g, ''))}
+          type="number"
+        />
 
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 1 }}>
           <AppButton text="Cancel" variant="outlined" onClick={onClose} />
-          {!isUnlimited && (
-            <AppButton text="Apply" onClick={handleSubmit} loading={loading} disabled={!amount || Number(amount) <= 0} />
-          )}
+          <AppButton text="Apply" onClick={handleSubmit} loading={loading} disabled={!amount || Number(amount) <= 0} />
         </Box>
       </Box>
     </AppModal>

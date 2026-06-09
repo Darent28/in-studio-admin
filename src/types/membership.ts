@@ -6,23 +6,27 @@ export interface Membership {
   userFirstName: string;
   userLastName: string;
   userEmail: string;
-  planId: number;
-  planName: string;
-  planType: string;
-  planCredits: number;
   startDate: string;
   endDate: string;
   creditsLeft: number;
   status: MembershipStatus;
+  paymentMethod: string | null;
+  paymentStatus: string | null;
+  stripePaymentIntentId: string | null;
   createdAt: string;
 }
 
 export interface MembershipPayload {
   userId: number;
-  planId: number;
   startDate: string;
+  endDate: string;
 }
 
 export interface AdjustCreditsPayload {
   delta: number;
+}
+
+export interface ChangePeriodPayload {
+  startDate: string;
+  endDate: string;
 }

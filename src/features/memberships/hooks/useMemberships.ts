@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../../lib/api';
 import { useAuthContext } from '../../../context/AuthContext';
-import type { MembershipPayload, AdjustCreditsPayload, MembershipStatus } from '../../../types/membership';
+import type { MembershipPayload, AdjustCreditsPayload, ChangePeriodPayload, MembershipStatus } from '../../../types/membership';
 
 const KEY = 'admin-memberships';
 
@@ -29,6 +29,16 @@ export function useAdjustCredits() {
   return useMutation({
     mutationFn: ({ id, payload }: { id: number; payload: AdjustCreditsPayload }) =>
       api.admin.memberships.adjustCredits(id, payload, token!),
+    onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
+  });
+}
+
+export function useChangeMembershipPeriod() {
+  const { token } = useAuthContext();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: number; payload: ChangePeriodPayload }) =>
+      api.admin.memberships.changePeriod(id, payload, token!),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
 }

@@ -14,6 +14,7 @@ import { PlansPage } from './pages/PlansPage';
 import { ClassSessionsPage } from './pages/ClassSessionsPage';
 import { InstructorsPage } from './pages/InstructorsPage';
 import { MembershipsPage } from './pages/MembershipsPage';
+import { PaymentsPage } from './pages/PaymentsPage';
 
 function ProtectedRoute({ children }: { children: React.ReactElement }) {
   const { isAuthenticated } = useAuthContext();
@@ -54,6 +55,7 @@ function AppRoutes() {
         <Route path="rooms" element={<RoomsPage />} />
         <Route path="plans" element={<PlansPage />} />
         <Route path="sessions" element={<ClassSessionsPage />} />
+        <Route path="payments" element={<PaymentsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

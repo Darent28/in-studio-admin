@@ -12,49 +12,47 @@ import { useUsers } from '../../users/hooks/useUsers';
 import { usePlans } from '../../plans/hooks/usePlans';
 import type { AdminUser } from '../../../types/adminUser';
 import type { Plan } from '../../../types/plan';
-import type { MembershipPayload } from '../../../types/membership';
+import type { PaymentPayload, PaymentMethod } from '../../../types/payment';
 
-interface AssignMembershipModalProps {
+interface AddPaymentModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (payload: MembershipPayload) => Promise<void>;
+  onSubmit: (payload: PaymentPayload) => Promise<void>;
   loading?: boolean;
   error?: string;
 }
+
+const METHODS: { value: PaymentMethod; label: string }[] = [
+  { value: 'CASH',     label: 'Cash' },
+  { value: 'TRANSFER', label: 'Bank Transfer' },
+  { value: 'CARD',     label: 'Card' },
+];
 
 function initials(first: string, last: string) {
   return `${first[0] ?? ''}${last[0] ?? ''}`.toUpperCase();
 }
 
-function addDays(isoDate: string, days: number): string {
-  const d = new Date(isoDate);
-  d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0, 10);
-}
-
-function today(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-export function AssignMembershipModal({ open, onClose, onSubmit, loading, error }: AssignMembershipModalProps) {
+export function AddPaymentModal({ open, onClose, onSubmit, loading, error }: AddPaymentModalProps) {
   const { data: users = [], isLoading: loadingUsers } = useUsers();
   const { data: plans = [] } = usePlans();
 
   const [query, setQuery] = useState('');
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [planId, setPlanId] = useState<number>(0);
-  const [startDate, setStartDate] = useState(today());
+  const [method, setMethod] = useState<PaymentMethod>('CASH');
+  const [transactionRef, setTransactionRef] = useState('');
 
   useEffect(() => {
     if (!open) {
       setQuery('');
       setSelectedUser(null);
       setPlanId(0);
-      setStartDate(today());
+      setMethod('CASH');
+      setTransactionRef('');
     }
   }, [open]);
 
-  const filtered = useMemo(() => {
+  const filteredUsers = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return users.slice(0, 20);
     return users.filter((u: AdminUser) =>
@@ -70,15 +68,21 @@ export function AssignMembershipModal({ open, onClose, onSubmit, loading, error 
   );
 
   const selectedPlan = activePlans.find((p: Plan) => p.planId === planId);
-  const endDate = selectedPlan ? addDays(startDate, selectedPlan.durationDays) : null;
 
   const handleSubmit = async () => {
-    if (!selectedUser || !endDate) return;
-    await onSubmit({ userId: selectedUser.userId, startDate, endDate });
+    if (!selectedUser || !planId || !selectedPlan) return;
+    await onSubmit({
+      userId: selectedUser.userId,
+      planId,
+      amount: selectedPlan.price,
+      currency: 'MXN',
+      method,
+      transactionRef: transactionRef.trim() || undefined,
+    });
   };
 
   return (
-    <AppModal open={open} onClose={onClose} title="Assign Membership">
+    <AppModal open={open} onClose={onClose} title="Add Payment">
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
         {error && <Alert severity="error" sx={{ borderRadius: 2 }}>{error}</Alert>}
 
@@ -93,10 +97,10 @@ export function AssignMembershipModal({ open, onClose, onSubmit, loading, error 
           }
         />
 
-        {filtered.length > 0 && !selectedUser && (
+        {filteredUsers.length > 0 && !selectedUser && (
           <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, overflow: 'hidden', maxHeight: 200, overflowY: 'auto' }}>
             <List dense disablePadding>
-              {filtered.map((user: AdminUser, idx: number) => (
+              {filteredUsers.map((user: AdminUser, idx: number) => (
                 <Box key={user.userId}>
                   {idx > 0 && <Divider component="li" />}
                   <ListItemButton onClick={() => setSelectedUser(user)} sx={{ gap: 1 }}>
@@ -154,32 +158,45 @@ export function AssignMembershipModal({ open, onClose, onSubmit, loading, error 
               </Select>
             </FormControl>
 
-            <AppInput label="Start date" value={startDate} onChange={setStartDate} type="date" required />
-
-            {endDate && (
+            {selectedPlan && (
               <Box sx={{ display: 'flex', gap: 2 }}>
                 <Box sx={{ flex: 1, p: 1.5, bgcolor: 'grey.50', borderRadius: 2, textAlign: 'center' }}>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>Ends</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{endDate}</Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>Amount</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 700 }}>${selectedPlan.price} MXN</Typography>
                 </Box>
                 <Box sx={{ flex: 1, p: 1.5, bgcolor: 'grey.50', borderRadius: 2, textAlign: 'center' }}>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>Credits</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    {selectedPlan?.type === 'UNLIMITED' ? '∞' : selectedPlan?.credits}
+                  <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                    {selectedPlan.type === 'UNLIMITED' ? '∞' : selectedPlan.credits}
                   </Typography>
                 </Box>
                 <Box sx={{ flex: 1, p: 1.5, bgcolor: 'grey.50', borderRadius: 2, textAlign: 'center' }}>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>Duration</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedPlan?.durationDays}d</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 700 }}>{selectedPlan.durationDays}d</Typography>
                 </Box>
               </Box>
             )}
+
+            <FormControl fullWidth size="small">
+              <InputLabel>Payment method</InputLabel>
+              <Select value={method} label="Payment method" onChange={(e) => setMethod(e.target.value as PaymentMethod)}>
+                {METHODS.map((m) => (
+                  <MenuItem key={m.value} value={m.value}>{m.label}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <AppInput
+              label="Transaction reference (optional)"
+              value={transactionRef}
+              onChange={setTransactionRef}
+            />
           </>
         )}
 
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1, mt: 1 }}>
           <AppButton text="Cancel" variant="outlined" onClick={onClose} />
-          <AppButton text="Assign Membership" onClick={handleSubmit} loading={loading} disabled={!selectedUser || !endDate} />
+          <AppButton text="Add Payment" onClick={handleSubmit} loading={loading} disabled={!selectedUser || !planId} />
         </Box>
       </Box>
     </AppModal>

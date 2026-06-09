@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Alert, FormControl, InputLabel, Select, MenuItem, ToggleButtonGroup, ToggleButton, Typography } from '@mui/material';
 import { AppModal } from '../../../shared/components/AppModal';
 import { AppInput } from '../../../shared/components/AppInput';
@@ -56,18 +56,20 @@ const EMPTY: FormState = {
 export function ClassSessionFormModal({ open, onClose, onSubmit, session, loading, error }: ClassSessionFormModalProps) {
   const isEdit = !!session;
   const [form, setForm] = useState<FormState>(EMPTY);
+  const [localError, setLocalError] = useState('');
   const { data: rooms = [] } = useRooms();
   const { data: instructors = [] } = useInstructors();
 
   useEffect(() => {
     if (open) {
+      setLocalError('');
       setForm(
         session
           ? {
               instructorId: session.instructorId,
               roomId: session.roomId,
-              startTime: session.startTime,
-              endTime: session.endTime,
+              startTime: session.startTime?.slice(0, 5) ?? '',
+              endTime: session.endTime?.slice(0, 5) ?? '',
               title: session.title ?? '',
               status: session.status,
               days: session.days ?? [],
@@ -88,6 +90,12 @@ export function ClassSessionFormModal({ open, onClose, onSubmit, session, loadin
     }));
 
   const handleSubmit = async () => {
+    setLocalError('');
+    if (!form.instructorId) { setLocalError('Please select an instructor.'); return; }
+    if (!form.roomId) { setLocalError('Please select a room.'); return; }
+    if (!form.startTime) { setLocalError('Start time is required.'); return; }
+    if (!form.endTime) { setLocalError('End time is required.'); return; }
+
     const payload: ClassSessionPayload = {
       instructorId: form.instructorId,
       roomId: form.roomId,
@@ -105,7 +113,7 @@ export function ClassSessionFormModal({ open, onClose, onSubmit, session, loadin
   return (
     <AppModal open={open} onClose={onClose} title={isEdit ? 'Edit Session' : 'Create Session'}>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-        {error && <Alert severity="error" sx={{ borderRadius: 2 }}>{error}</Alert>}
+        {(localError || error) && <Alert severity="error" sx={{ borderRadius: 2 }}>{localError || error}</Alert>}
 
         <AppInput
           label="Title (optional)"
@@ -167,20 +175,46 @@ export function ClassSessionFormModal({ open, onClose, onSubmit, session, loadin
         })()}
 
         <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-          <AppInput
-            label="Start time"
-            value={form.startTime}
-            onChange={(v) => setForm((p) => ({ ...p, startTime: v }))}
-            type="time"
-            required
-          />
-          <AppInput
-            label="End time"
-            value={form.endTime}
-            onChange={(v) => setForm((p) => ({ ...p, endTime: v }))}
-            type="time"
-            required
-          />
+          <Box>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+              Start time *
+            </Typography>
+            <Box
+              component="input"
+              type="time"
+              value={form.startTime}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setForm((p) => ({ ...p, startTime: e.target.value }))
+              }
+              sx={{
+                display: 'block', width: '100%', boxSizing: 'border-box',
+                px: '14px', py: '8.5px',
+                border: '1px solid rgba(0,0,0,0.23)', borderRadius: 1,
+                fontSize: 14, fontFamily: 'inherit', outline: 'none',
+                '&:focus': { borderColor: 'primary.main', borderWidth: '2px' },
+              }}
+            />
+          </Box>
+          <Box>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+              End time *
+            </Typography>
+            <Box
+              component="input"
+              type="time"
+              value={form.endTime}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setForm((p) => ({ ...p, endTime: e.target.value }))
+              }
+              sx={{
+                display: 'block', width: '100%', boxSizing: 'border-box',
+                px: '14px', py: '8.5px',
+                border: '1px solid rgba(0,0,0,0.23)', borderRadius: 1,
+                fontSize: 14, fontFamily: 'inherit', outline: 'none',
+                '&:focus': { borderColor: 'primary.main', borderWidth: '2px' },
+              }}
+            />
+          </Box>
         </Box>
 
         <Box>

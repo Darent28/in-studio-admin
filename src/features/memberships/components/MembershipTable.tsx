@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  Chip, IconButton, Skeleton, Typography, Box, LinearProgress,
+  Chip, IconButton, Skeleton, Typography, Box,
   Menu, MenuItem, ListItemIcon,
 } from '@mui/material';
-import { Settings, Delete, CreditScore, SwapHoriz } from '@mui/icons-material';
+import { Settings, Delete, CreditScore, SwapHoriz, DateRange } from '@mui/icons-material';
 import type { Membership, MembershipStatus } from '../../../types/membership';
 
 interface MembershipTableProps {
@@ -12,6 +12,7 @@ interface MembershipTableProps {
   loading: boolean;
   onAdjustCredits: (m: Membership) => void;
   onChangeStatus: (m: Membership) => void;
+  onChangePeriod: (m: Membership) => void;
   onDelete: (m: Membership) => void;
 }
 
@@ -22,31 +23,11 @@ const STATUS_COLOR: Record<MembershipStatus, 'success' | 'warning' | 'error' | '
   CANCELLED: 'error',
 };
 
-function CreditsDisplay({ creditsLeft, planCredits, planType }: { creditsLeft: number; planCredits: number; planType: string }) {
-  if (planType === 'UNLIMITED') {
-    return <Typography variant="body2" sx={{ color: 'primary.main', fontWeight: 600 }}>∞ Unlimited</Typography>;
-  }
-  const pct = planCredits > 0 ? Math.round((creditsLeft / planCredits) * 100) : 0;
-  return (
-    <Box sx={{ minWidth: 100 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.25 }}>
-        <Typography variant="caption" sx={{ fontWeight: 600 }}>{creditsLeft}</Typography>
-        <Typography variant="caption" color="text.secondary">/ {planCredits}</Typography>
-      </Box>
-      <LinearProgress
-        variant="determinate"
-        value={pct}
-        sx={{ height: 5, borderRadius: 4, bgcolor: 'grey.200',
-          '& .MuiLinearProgress-bar': { bgcolor: pct > 30 ? 'success.main' : 'warning.main' } }}
-      />
-    </Box>
-  );
-}
-
-function RowMenu({ m, onAdjustCredits, onChangeStatus, onDelete }: {
+function RowMenu({ m, onAdjustCredits, onChangeStatus, onChangePeriod, onDelete }: {
   m: Membership;
   onAdjustCredits: (m: Membership) => void;
   onChangeStatus: (m: Membership) => void;
+  onChangePeriod: (m: Membership) => void;
   onDelete: (m: Membership) => void;
 }) {
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
@@ -64,6 +45,9 @@ function RowMenu({ m, onAdjustCredits, onChangeStatus, onDelete }: {
         <MenuItem onClick={() => { setAnchor(null); onChangeStatus(m); }}>
           <ListItemIcon><SwapHoriz fontSize="small" /></ListItemIcon>Change status
         </MenuItem>
+        <MenuItem onClick={() => { setAnchor(null); onChangePeriod(m); }}>
+          <ListItemIcon><DateRange fontSize="small" /></ListItemIcon>Edit period
+        </MenuItem>
         <MenuItem onClick={() => { setAnchor(null); onDelete(m); }} sx={{ color: 'error.main' }}>
           <ListItemIcon><Delete fontSize="small" color="error" /></ListItemIcon>Delete
         </MenuItem>
@@ -72,13 +56,13 @@ function RowMenu({ m, onAdjustCredits, onChangeStatus, onDelete }: {
   );
 }
 
-export function MembershipTable({ memberships, loading, onAdjustCredits, onChangeStatus, onDelete }: MembershipTableProps) {
+export function MembershipTable({ memberships, loading, onAdjustCredits, onChangeStatus, onChangePeriod, onDelete }: MembershipTableProps) {
   if (loading) {
     return (
       <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
         <Table size="small"><TableBody>
           {Array.from({ length: 5 }).map((_, i) => (
-            <TableRow key={i}>{Array.from({ length: 6 }).map((__, j) => (
+            <TableRow key={i}>{Array.from({ length: 5 }).map((__, j) => (
               <TableCell key={j}><Skeleton variant="text" /></TableCell>
             ))}</TableRow>
           ))}
@@ -93,7 +77,6 @@ export function MembershipTable({ memberships, loading, onAdjustCredits, onChang
         <TableHead>
           <TableRow sx={{ '& th': { fontWeight: 700, bgcolor: 'grey.50' } }}>
             <TableCell>User</TableCell>
-            <TableCell>Plan</TableCell>
             <TableCell>Credits</TableCell>
             <TableCell>Period</TableCell>
             <TableCell align="center">Status</TableCell>
@@ -103,7 +86,7 @@ export function MembershipTable({ memberships, loading, onAdjustCredits, onChang
         <TableBody>
           {memberships.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} align="center" sx={{ py: 4, color: 'text.secondary' }}>
+              <TableCell colSpan={5} align="center" sx={{ py: 4, color: 'text.secondary' }}>
                 No memberships yet
               </TableCell>
             </TableRow>
@@ -116,11 +99,10 @@ export function MembershipTable({ memberships, loading, onAdjustCredits, onChang
                 <Typography variant="caption" color="text.secondary">{m.userEmail}</Typography>
               </TableCell>
               <TableCell>
-                <Typography variant="body2">{m.planName}</Typography>
-                <Typography variant="caption" color="text.secondary">{m.planType}</Typography>
-              </TableCell>
-              <TableCell>
-                <CreditsDisplay creditsLeft={m.creditsLeft} planCredits={m.planCredits} planType={m.planType} />
+                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{m.creditsLeft}</Typography>
+                  <Typography variant="caption" color="text.secondary">credits</Typography>
+                </Box>
               </TableCell>
               <TableCell sx={{ fontSize: 12, color: 'text.secondary' }}>
                 {m.startDate}<br />{m.endDate}
@@ -134,7 +116,7 @@ export function MembershipTable({ memberships, loading, onAdjustCredits, onChang
                 />
               </TableCell>
               <TableCell align="right">
-                <RowMenu m={m} onAdjustCredits={onAdjustCredits} onChangeStatus={onChangeStatus} onDelete={onDelete} />
+                <RowMenu m={m} onAdjustCredits={onAdjustCredits} onChangeStatus={onChangeStatus} onChangePeriod={onChangePeriod} onDelete={onDelete} />
               </TableCell>
             </TableRow>
           ))}
