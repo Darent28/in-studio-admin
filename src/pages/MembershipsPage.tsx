@@ -41,7 +41,8 @@ export function MembershipsPage() {
       return (
         m.userFirstName.toLowerCase().includes(q) ||
         m.userLastName.toLowerCase().includes(q) ||
-        m.userEmail.toLowerCase().includes(q)
+        m.userEmail.toLowerCase().includes(q) ||
+        (m.lastPaymentId != null && String(m.lastPaymentId).includes(q))
       );
     });
   }, [memberships, search, filterStatus]);
@@ -114,7 +115,7 @@ export function MembershipsPage() {
       <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
         <TextField
           size="small"
-          placeholder="Search user or plan…"
+          placeholder="Search by user, email or payment ID…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           sx={{ width: 260 }}

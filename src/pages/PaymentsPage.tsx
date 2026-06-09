@@ -5,7 +5,6 @@ import {
   InputAdornment, TextField, ToggleButtonGroup, ToggleButton, Tooltip, IconButton,
 } from '@mui/material';
 import { Search, CheckCircleOutlined } from '@mui/icons-material';
-import { ConfirmDialog } from '../shared/components/ConfirmDialog';
 import { AppButton } from '../shared/components/AppButton';
 import { AddPaymentModal } from '../features/payments/components/AddPaymentModal';
 import { usePayments, useCreatePayment, useConfirmPayment } from '../features/payments/hooks/usePayments';
@@ -33,7 +32,7 @@ export function PaymentsPage() {
   const confirmPayment = useConfirmPayment();
 
   const [addOpen, setAddOpen] = useState(false);
-  const [confirmTarget, setConfirmTarget] = useState<Payment | null>(null);
+  const [confirmingId, setConfirmingId] = useState<number | null>(null);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [search, setSearch] = useState('');
@@ -64,16 +63,16 @@ export function PaymentsPage() {
     }
   };
 
-  const handleConfirm = async () => {
-    if (!confirmTarget) return;
+  const handleConfirm = async (p: Payment) => {
+    setConfirmingId(p.paymentId);
     setErrorMsg('');
     try {
-      await confirmPayment.mutateAsync(confirmTarget.paymentId);
-      setSuccessMsg(`Payment #${confirmTarget.paymentId} confirmed. Credits added.`);
-      setConfirmTarget(null);
+      await confirmPayment.mutateAsync(p.paymentId);
+      setSuccessMsg(`Payment #${p.paymentId} confirmed. Credits added to membership.`);
     } catch (err: any) {
       setErrorMsg(err.message ?? 'Failed to confirm payment.');
-      setConfirmTarget(null);
+    } finally {
+      setConfirmingId(null);
     }
   };
 
@@ -173,13 +172,18 @@ export function PaymentsPage() {
                 <TableCell align="center">
                   {p.status === 'PENDING' && (
                     <Tooltip title="Confirm payment">
-                      <IconButton
-                        size="small"
-                        color="success"
-                        onClick={() => setConfirmTarget(p)}
-                      >
-                        <CheckCircleOutlined fontSize="small" />
-                      </IconButton>
+                      <span>
+                        <IconButton
+                          size="small"
+                          color="success"
+                          disabled={confirmingId === p.paymentId}
+                          onClick={() => handleConfirm(p)}
+                        >
+                          {confirmingId === p.paymentId
+                            ? <CircularProgress size={16} color="success" />
+                            : <CheckCircleOutlined fontSize="small" />}
+                        </IconButton>
+                      </span>
                     </Tooltip>
                   )}
                 </TableCell>
@@ -195,19 +199,6 @@ export function PaymentsPage() {
         onSubmit={handleAddPayment}
         loading={createPayment.isPending}
         error={errorMsg}
-      />
-
-      <ConfirmDialog
-        open={!!confirmTarget}
-        onClose={() => setConfirmTarget(null)}
-        onConfirm={handleConfirm}
-        title="Confirm Payment"
-        message={
-          confirmTarget
-            ? `Confirm ${confirmTarget.method} payment of ${fmtAmount(confirmTarget.amount, confirmTarget.currency)} for ${confirmTarget.userFirstName} ${confirmTarget.userLastName} (${confirmTarget.planName})? This will add credits to their membership.`
-            : ''
-        }
-        loading={confirmPayment.isPending}
       />
 
       <Snackbar open={!!successMsg} autoHideDuration={4000} onClose={() => setSuccessMsg('')}

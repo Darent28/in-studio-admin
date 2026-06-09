@@ -62,7 +62,7 @@ export function MembershipTable({ memberships, loading, onAdjustCredits, onChang
       <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
         <Table size="small"><TableBody>
           {Array.from({ length: 5 }).map((_, i) => (
-            <TableRow key={i}>{Array.from({ length: 5 }).map((__, j) => (
+            <TableRow key={i}>{Array.from({ length: 6 }).map((__, j) => (
               <TableCell key={j}><Skeleton variant="text" /></TableCell>
             ))}</TableRow>
           ))}
@@ -80,13 +80,14 @@ export function MembershipTable({ memberships, loading, onAdjustCredits, onChang
             <TableCell>Credits</TableCell>
             <TableCell>Period</TableCell>
             <TableCell align="center">Status</TableCell>
+            <TableCell>Payment ID</TableCell>
             <TableCell align="right">Actions</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {memberships.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5} align="center" sx={{ py: 4, color: 'text.secondary' }}>
+              <TableCell colSpan={6} align="center" sx={{ py: 4, color: 'text.secondary' }}>
                 No memberships yet
               </TableCell>
             </TableRow>
@@ -98,11 +99,28 @@ export function MembershipTable({ memberships, loading, onAdjustCredits, onChang
                 </Typography>
                 <Typography variant="caption" color="text.secondary">{m.userEmail}</Typography>
               </TableCell>
-              <TableCell>
-                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{m.creditsLeft}</Typography>
-                  <Typography variant="caption" color="text.secondary">credits</Typography>
+              <TableCell sx={{ minWidth: 110 }}>
+                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, mb: 0.5 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 700 }}>{m.creditsLeft}</Typography>
+                  {m.creditsTotal > 0 && (
+                    <Typography variant="caption" color="text.secondary">/ {m.creditsTotal}</Typography>
+                  )}
                 </Box>
+                {m.creditsTotal > 0 ? (
+                  <Box sx={{ height: 4, borderRadius: 2, bgcolor: 'grey.200', overflow: 'hidden' }}>
+                    <Box sx={{
+                      height: '100%', borderRadius: 2,
+                      bgcolor: m.status === 'FROZEN'
+                        ? 'info.main'
+                        : m.creditsLeft > m.creditsTotal * 0.5 ? 'success.main'
+                        : m.creditsLeft > 0 ? 'warning.main'
+                        : 'error.main',
+                      width: `${Math.round((m.creditsLeft / m.creditsTotal) * 100)}%`,
+                    }} />
+                  </Box>
+                ) : (
+                  <Typography variant="caption" color="text.secondary">credits</Typography>
+                )}
               </TableCell>
               <TableCell sx={{ fontSize: 12, color: 'text.secondary' }}>
                 {m.startDate}<br />{m.endDate}
@@ -114,6 +132,9 @@ export function MembershipTable({ memberships, loading, onAdjustCredits, onChang
                   color={STATUS_COLOR[m.status]}
                   variant="outlined"
                 />
+              </TableCell>
+              <TableCell sx={{ fontSize: 12, color: 'text.secondary', fontFamily: 'monospace' }}>
+                {m.lastPaymentId != null ? `#${m.lastPaymentId}` : '—'}
               </TableCell>
               <TableCell align="right">
                 <RowMenu m={m} onAdjustCredits={onAdjustCredits} onChangeStatus={onChangeStatus} onChangePeriod={onChangePeriod} onDelete={onDelete} />

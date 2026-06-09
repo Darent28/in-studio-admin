@@ -9,11 +9,10 @@ export interface Membership {
   startDate: string;
   endDate: string;
   creditsLeft: number;
+  creditsTotal: number;
   status: MembershipStatus;
-  paymentMethod: string | null;
-  paymentStatus: string | null;
-  stripePaymentIntentId: string | null;
   createdAt: string;
+  lastPaymentId: number | null;
 }
 
 export interface MembershipPayload {
