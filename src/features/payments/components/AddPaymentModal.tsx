@@ -22,10 +22,10 @@ interface AddPaymentModalProps {
   error?: string;
 }
 
-const METHODS: { value: PaymentMethod; label: string }[] = [
-  { value: 'CASH',     label: 'Cash' },
-  { value: 'TRANSFER', label: 'Bank Transfer' },
-  { value: 'CARD',     label: 'Card' },
+const METHODS: { value: PaymentMethod; label: string; hint: string }[] = [
+  { value: 'CASH',     label: 'Cash',          hint: 'Requires confirmation' },
+  { value: 'TRANSFER', label: 'Bank Transfer',  hint: 'Requires confirmation' },
+  { value: 'CARD',     label: 'Card',           hint: 'Auto-confirmed' },
 ];
 
 function initials(first: string, last: string) {
@@ -181,7 +181,14 @@ export function AddPaymentModal({ open, onClose, onSubmit, loading, error }: Add
               <InputLabel>Payment method</InputLabel>
               <Select value={method} label="Payment method" onChange={(e) => setMethod(e.target.value as PaymentMethod)}>
                 {METHODS.map((m) => (
-                  <MenuItem key={m.value} value={m.value}>{m.label}</MenuItem>
+                  <MenuItem key={m.value} value={m.value}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
+                      <Typography variant="body2">{m.label}</Typography>
+                      <Typography variant="caption" color={m.hint === 'Auto-confirmed' ? 'success.main' : 'text.secondary'} sx={{ ml: 'auto' }}>
+                        {m.hint}
+                      </Typography>
+                    </Box>
+                  </MenuItem>
                 ))}
               </Select>
             </FormControl>
