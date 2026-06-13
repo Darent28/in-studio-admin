@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Menu, MenuItem, CircularProgress, Box, Chip, ListItemIcon } from '@mui/material';
+import { IconButton, ListItemIcon, Menu, MenuItem } from '@mui/material';
 import { Settings, Edit, Delete, CheckCircle, Cancel } from '@mui/icons-material';
+import { AppTable } from '../../../shared/components/AppTable';
+import type { ColDef } from '../../../shared/components/AppTable';
 import type { Room } from '../../../types/room';
 
-interface RoomTableProps {
+interface Props {
   rooms: Room[];
   loading?: boolean;
   onEdit: (room: Room) => void;
@@ -15,7 +17,9 @@ function RowMenu({ room, onEdit, onDelete }: { room: Room; onEdit: (r: Room) => 
   return (
     <>
       <IconButton size="small" onClick={(e) => setAnchor(e.currentTarget)}><Settings fontSize="small" /></IconButton>
-      <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={() => setAnchor(null)} transformOrigin={{ horizontal: 'right', vertical: 'top' }} anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}>
+      <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={() => setAnchor(null)}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}>
         <MenuItem onClick={() => { setAnchor(null); onEdit(room); }}>
           <ListItemIcon><Edit fontSize="small" /></ListItemIcon>Edit
         </MenuItem>
@@ -27,34 +31,23 @@ function RowMenu({ room, onEdit, onDelete }: { room: Room; onEdit: (r: Room) => 
   );
 }
 
-export function RoomTable({ rooms, loading, onEdit, onDelete }: RoomTableProps) {
-  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress /></Box>;
+export function RoomTable({ rooms, loading, onEdit, onDelete }: Props) {
+  const columns: ColDef<Room>[] = [
+    { key: 'name', header: 'Name', sx: { fontWeight: 500 }, render: (r) => r.name },
+    { key: 'capacity', header: 'Capacity', render: (r) => r.capacity },
+    { key: 'location', header: 'Location', render: (r) => r.location ?? '—' },
+    { key: 'equipment', header: 'Equipment', render: (r) => r.equipment ?? '—' },
+    { key: 'active', header: 'Active', render: (r) => r.active ? <CheckCircle fontSize="small" color="success" /> : <Cancel fontSize="small" color="disabled" /> },
+    { key: 'actions', header: '', align: 'right', render: (r) => <RowMenu room={r} onEdit={onEdit} onDelete={onDelete} /> },
+  ];
+
   return (
-    <TableContainer component={Paper} sx={{ border: '1px solid', borderColor: 'divider' }}>
-      <Table>
-        <TableHead>
-          <TableRow sx={{ '& th': { fontWeight: 700, color: 'text.secondary', fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5 } }}>
-            <TableCell>Name</TableCell>
-            <TableCell>Capacity</TableCell>
-            <TableCell>Location</TableCell>
-            <TableCell>Equipment</TableCell>
-            <TableCell>Active</TableCell>
-            <TableCell align="right" />
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {rooms.map((r) => (
-            <TableRow key={r.roomId} hover>
-              <TableCell sx={{ fontWeight: 500 }}>{r.name}</TableCell>
-              <TableCell>{r.capacity}</TableCell>
-              <TableCell>{r.location ?? '—'}</TableCell>
-              <TableCell>{r.equipment ?? '—'}</TableCell>
-              <TableCell>{r.active ? <CheckCircle fontSize="small" color="success" /> : <Cancel fontSize="small" color="disabled" />}</TableCell>
-              <TableCell align="right"><RowMenu room={r} onEdit={onEdit} onDelete={onDelete} /></TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+    <AppTable
+      columns={columns}
+      rows={rooms}
+      loading={loading}
+      getRowKey={(r) => r.roomId}
+      emptyMessage="No rooms yet."
+    />
   );
 }

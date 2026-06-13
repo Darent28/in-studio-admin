@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Menu, MenuItem, CircularProgress, Box, Chip, ListItemIcon } from '@mui/material';
+import { Chip, IconButton, ListItemIcon, Menu, MenuItem } from '@mui/material';
 import { Settings, Edit, Delete } from '@mui/icons-material';
+import { AppTable } from '../../../shared/components/AppTable';
+import type { ColDef } from '../../../shared/components/AppTable';
 import type { ClassSession, SessionStatus } from '../../../types/classSession';
 
 const STATUS_COLORS: Record<SessionStatus, 'success' | 'error' | 'default'> = {
@@ -12,7 +14,7 @@ const DAY_ABBR: Record<string, string> = {
   THURSDAY: 'Thu', FRIDAY: 'Fri', SATURDAY: 'Sat', SUNDAY: 'Sun',
 };
 
-interface ClassSessionTableProps {
+interface Props {
   sessions: ClassSession[];
   loading?: boolean;
   onEdit: (session: ClassSession) => void;
@@ -24,7 +26,9 @@ function RowMenu({ session, onEdit, onDelete }: { session: ClassSession; onEdit:
   return (
     <>
       <IconButton size="small" onClick={(e) => setAnchor(e.currentTarget)}><Settings fontSize="small" /></IconButton>
-      <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={() => setAnchor(null)} transformOrigin={{ horizontal: 'right', vertical: 'top' }} anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}>
+      <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={() => setAnchor(null)}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}>
         <MenuItem onClick={() => { setAnchor(null); onEdit(session); }}>
           <ListItemIcon><Edit fontSize="small" /></ListItemIcon>Edit
         </MenuItem>
@@ -36,40 +40,25 @@ function RowMenu({ session, onEdit, onDelete }: { session: ClassSession; onEdit:
   );
 }
 
-export function ClassSessionTable({ sessions, loading, onEdit, onDelete }: ClassSessionTableProps) {
-  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress /></Box>;
+export function ClassSessionTable({ sessions, loading, onEdit, onDelete }: Props) {
+  const columns: ColDef<ClassSession>[] = [
+    { key: 'title', header: 'Title', sx: { fontWeight: 500 }, render: (s) => s.title ?? '—' },
+    { key: 'instructor', header: 'Instructor', render: (s) => `${s.instructorFirstName} ${s.instructorLastName}` },
+    { key: 'room', header: 'Room', render: (s) => s.roomName },
+    { key: 'start', header: 'Start', sx: { fontSize: 13 }, render: (s) => s.startTime },
+    { key: 'end', header: 'End', sx: { fontSize: 13 }, render: (s) => s.endTime },
+    { key: 'days', header: 'Days', sx: { fontSize: 12 }, render: (s) => s.days?.length ? s.days.map((d) => DAY_ABBR[d] ?? d).join(', ') : '—' },
+    { key: 'status', header: 'Status', render: (s) => <Chip label={s.status} size="small" color={STATUS_COLORS[s.status]} sx={{ fontSize: 11, fontWeight: 600 }} /> },
+    { key: 'actions', header: '', align: 'right', render: (s) => <RowMenu session={s} onEdit={onEdit} onDelete={onDelete} /> },
+  ];
+
   return (
-    <TableContainer component={Paper} sx={{ border: '1px solid', borderColor: 'divider' }}>
-      <Table>
-        <TableHead>
-          <TableRow sx={{ '& th': { fontWeight: 700, color: 'text.secondary', fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5 } }}>
-            <TableCell>Title</TableCell>
-            <TableCell>Instructor</TableCell>
-            <TableCell>Room</TableCell>
-            <TableCell>Start</TableCell>
-            <TableCell>End</TableCell>
-            <TableCell>Days</TableCell>
-            <TableCell>Status</TableCell>
-            <TableCell align="right" />
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {sessions.map((s) => (
-            <TableRow key={s.sessionId} hover>
-              <TableCell sx={{ fontWeight: 500 }}>{s.title ?? '—'}</TableCell>
-              <TableCell>{s.instructorFirstName} {s.instructorLastName}</TableCell>
-              <TableCell>{s.roomName}</TableCell>
-              <TableCell sx={{ fontSize: 13 }}>{s.startTime}</TableCell>
-              <TableCell sx={{ fontSize: 13 }}>{s.endTime}</TableCell>
-              <TableCell sx={{ fontSize: 12 }}>
-                {s.days?.length ? s.days.map((d) => DAY_ABBR[d] ?? d).join(', ') : '—'}
-              </TableCell>
-              <TableCell><Chip label={s.status} size="small" color={STATUS_COLORS[s.status]} sx={{ fontSize: 11, fontWeight: 600 }} /></TableCell>
-              <TableCell align="right"><RowMenu session={s} onEdit={onEdit} onDelete={onDelete} /></TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+    <AppTable
+      columns={columns}
+      rows={sessions}
+      loading={loading}
+      getRowKey={(s) => s.sessionId}
+      emptyMessage="No sessions yet."
+    />
   );
 }

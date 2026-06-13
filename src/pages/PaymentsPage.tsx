@@ -1,30 +1,14 @@
 import { useState, useMemo } from 'react';
 import {
-  Box, Typography, Alert, Snackbar, Chip, CircularProgress,
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  InputAdornment, TextField, ToggleButtonGroup, ToggleButton, Tooltip, IconButton,
+  Box, Typography, Alert, Snackbar,
+  InputAdornment, TextField, ToggleButtonGroup, ToggleButton,
 } from '@mui/material';
-import { Search, CheckCircleOutlined } from '@mui/icons-material';
+import { Search } from '@mui/icons-material';
 import { AppButton } from '../shared/components/AppButton';
 import { AddPaymentModal } from '../features/payments/components/AddPaymentModal';
+import { PaymentTable } from '../features/payments/components/PaymentTable';
 import { usePayments, useCreatePayment, useConfirmPayment } from '../features/payments/hooks/usePayments';
 import type { Payment, PaymentPayload, PaymentStatus } from '../types/payment';
-
-const STATUS_COLOR: Record<PaymentStatus, 'warning' | 'success' | 'error' | 'default'> = {
-  PENDING:   'warning',
-  COMPLETED: 'success',
-  FAILED:    'error',
-  REFUNDED:  'default',
-};
-
-function fmt(iso: string | null) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-}
-
-function fmtAmount(amount: number, currency: string) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
-}
 
 export function PaymentsPage() {
   const { data: payments = [], isLoading } = usePayments();
@@ -118,80 +102,12 @@ export function PaymentsPage() {
         <Alert severity="error" onClose={() => setErrorMsg('')} sx={{ mb: 2 }}>{errorMsg}</Alert>
       )}
 
-      <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2 }}>
-        <Table size="small">
-          <TableHead>
-            <TableRow sx={{ '& th': { fontWeight: 700, bgcolor: 'background.default' } }}>
-              <TableCell>ID</TableCell>
-              <TableCell>User</TableCell>
-              <TableCell>Plan</TableCell>
-              <TableCell>Amount</TableCell>
-              <TableCell>Method</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Created</TableCell>
-              <TableCell>Paid at</TableCell>
-              <TableCell align="center">Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={9} align="center" sx={{ py: 4 }}>
-                  <CircularProgress size={24} />
-                </TableCell>
-              </TableRow>
-            ) : filtered.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={9} align="center" sx={{ py: 4, color: 'text.secondary' }}>
-                  No payments found.
-                </TableCell>
-              </TableRow>
-            ) : filtered.map((p: Payment) => (
-              <TableRow key={p.paymentId} hover>
-                <TableCell sx={{ color: 'text.secondary', fontSize: 12 }}>#{p.paymentId}</TableCell>
-                <TableCell>
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                    {p.userFirstName} {p.userLastName}
-                  </Typography>
-                </TableCell>
-                <TableCell>{p.planName}</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>{fmtAmount(p.amount, p.currency)}</TableCell>
-                <TableCell>
-                  <Chip label={p.method} size="small" variant="outlined" sx={{ fontSize: 11 }} />
-                </TableCell>
-                <TableCell>
-                  <Chip
-                    label={p.status}
-                    size="small"
-                    color={STATUS_COLOR[p.status]}
-                    sx={{ fontSize: 11, fontWeight: 600 }}
-                  />
-                </TableCell>
-                <TableCell sx={{ fontSize: 12, color: 'text.secondary' }}>{fmt(p.createdAt)}</TableCell>
-                <TableCell sx={{ fontSize: 12, color: 'text.secondary' }}>{fmt(p.paidAt)}</TableCell>
-                <TableCell align="center">
-                  {p.status === 'PENDING' && (
-                    <Tooltip title="Confirm payment">
-                      <span>
-                        <IconButton
-                          size="small"
-                          color="success"
-                          disabled={confirmingId === p.paymentId}
-                          onClick={() => handleConfirm(p)}
-                        >
-                          {confirmingId === p.paymentId
-                            ? <CircularProgress size={16} color="success" />
-                            : <CheckCircleOutlined fontSize="small" />}
-                        </IconButton>
-                      </span>
-                    </Tooltip>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <PaymentTable
+        payments={filtered}
+        loading={isLoading}
+        confirmingId={confirmingId}
+        onConfirm={handleConfirm}
+      />
 
       <AddPaymentModal
         open={addOpen}

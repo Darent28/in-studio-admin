@@ -1,13 +1,11 @@
 import { useState } from 'react';
-import {
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-  Chip, IconButton, Skeleton, Typography, Box,
-  Menu, MenuItem, ListItemIcon,
-} from '@mui/material';
+import { Box, Chip, IconButton, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material';
 import { Settings, Delete, CreditScore, SwapHoriz, DateRange } from '@mui/icons-material';
+import { AppTable } from '../../../shared/components/AppTable';
+import type { ColDef } from '../../../shared/components/AppTable';
 import type { Membership, MembershipStatus } from '../../../types/membership';
 
-interface MembershipTableProps {
+interface Props {
   memberships: Membership[];
   loading: boolean;
   onAdjustCredits: (m: Membership) => void;
@@ -17,11 +15,34 @@ interface MembershipTableProps {
 }
 
 const STATUS_COLOR: Record<MembershipStatus, 'success' | 'warning' | 'error' | 'default'> = {
-  ACTIVE:    'success',
-  FROZEN:    'warning',
-  EXPIRED:   'default',
-  CANCELLED: 'error',
+  ACTIVE: 'success', FROZEN: 'warning', EXPIRED: 'default', CANCELLED: 'error',
 };
+
+function CreditsCell({ m }: { m: Membership }) {
+  return (
+    <Box sx={{ minWidth: 110 }}>
+      <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, mb: 0.5 }}>
+        <Typography variant="body2" sx={{ fontWeight: 700 }}>{m.creditsLeft}</Typography>
+        {m.creditsTotal > 0 && (
+          <Typography variant="caption" color="text.secondary">/ {m.creditsTotal}</Typography>
+        )}
+      </Box>
+      {m.creditsTotal > 0 ? (
+        <Box sx={{ height: 4, borderRadius: 2, bgcolor: 'grey.200', overflow: 'hidden' }}>
+          <Box sx={{
+            height: '100%', borderRadius: 2,
+            bgcolor: m.status === 'FROZEN' ? 'info.main'
+              : m.creditsLeft > m.creditsTotal * 0.5 ? 'success.main'
+              : m.creditsLeft > 0 ? 'warning.main' : 'error.main',
+            width: `${Math.round((m.creditsLeft / m.creditsTotal) * 100)}%`,
+          }} />
+        </Box>
+      ) : (
+        <Typography variant="caption" color="text.secondary">credits</Typography>
+      )}
+    </Box>
+  );
+}
 
 function RowMenu({ m, onAdjustCredits, onChangeStatus, onChangePeriod, onDelete }: {
   m: Membership;
@@ -56,93 +77,34 @@ function RowMenu({ m, onAdjustCredits, onChangeStatus, onChangePeriod, onDelete 
   );
 }
 
-export function MembershipTable({ memberships, loading, onAdjustCredits, onChangeStatus, onChangePeriod, onDelete }: MembershipTableProps) {
-  if (loading) {
-    return (
-      <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
-        <Table size="small"><TableBody>
-          {Array.from({ length: 5 }).map((_, i) => (
-            <TableRow key={i}>{Array.from({ length: 6 }).map((__, j) => (
-              <TableCell key={j}><Skeleton variant="text" /></TableCell>
-            ))}</TableRow>
-          ))}
-        </TableBody></Table>
-      </TableContainer>
-    );
-  }
+export function MembershipTable({ memberships, loading, onAdjustCredits, onChangeStatus, onChangePeriod, onDelete }: Props) {
+  const columns: ColDef<Membership>[] = [
+    {
+      key: 'user', header: 'User',
+      render: (m) => (
+        <Box>
+          <Typography variant="body2" sx={{ fontWeight: 600 }}>{m.userFirstName} {m.userLastName}</Typography>
+          <Typography variant="caption" color="text.secondary">{m.userEmail}</Typography>
+        </Box>
+      ),
+    },
+    { key: 'credits', header: 'Credits', render: (m) => <CreditsCell m={m} /> },
+    { key: 'period', header: 'Period', sx: { fontSize: 12, color: 'text.secondary' }, render: (m) => <>{m.startDate}<br />{m.endDate}</> },
+    { key: 'status', header: 'Status', align: 'center', render: (m) => <Chip label={m.status} size="small" color={STATUS_COLOR[m.status]} sx={{ fontSize: 11 }} /> },
+    { key: 'paymentId', header: 'Payment ID', sx: { fontSize: 12, color: 'text.secondary', fontFamily: 'monospace' }, render: (m) => m.lastPaymentId != null ? `#${m.lastPaymentId}` : '—' },
+    {
+      key: 'actions', header: '', align: 'right',
+      render: (m) => <RowMenu m={m} onAdjustCredits={onAdjustCredits} onChangeStatus={onChangeStatus} onChangePeriod={onChangePeriod} onDelete={onDelete} />,
+    },
+  ];
 
   return (
-    <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
-      <Table size="small">
-        <TableHead>
-          <TableRow sx={{ '& th': { fontWeight: 700, bgcolor: 'grey.50' } }}>
-            <TableCell>User</TableCell>
-            <TableCell>Credits</TableCell>
-            <TableCell>Period</TableCell>
-            <TableCell align="center">Status</TableCell>
-            <TableCell>Payment ID</TableCell>
-            <TableCell align="right">Actions</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {memberships.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={6} align="center" sx={{ py: 4, color: 'text.secondary' }}>
-                No memberships yet
-              </TableCell>
-            </TableRow>
-          ) : memberships.map((m) => (
-            <TableRow key={m.membershipId} hover>
-              <TableCell>
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                  {m.userFirstName} {m.userLastName}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">{m.userEmail}</Typography>
-              </TableCell>
-              <TableCell sx={{ minWidth: 110 }}>
-                <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5, mb: 0.5 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 700 }}>{m.creditsLeft}</Typography>
-                  {m.creditsTotal > 0 && (
-                    <Typography variant="caption" color="text.secondary">/ {m.creditsTotal}</Typography>
-                  )}
-                </Box>
-                {m.creditsTotal > 0 ? (
-                  <Box sx={{ height: 4, borderRadius: 2, bgcolor: 'grey.200', overflow: 'hidden' }}>
-                    <Box sx={{
-                      height: '100%', borderRadius: 2,
-                      bgcolor: m.status === 'FROZEN'
-                        ? 'info.main'
-                        : m.creditsLeft > m.creditsTotal * 0.5 ? 'success.main'
-                        : m.creditsLeft > 0 ? 'warning.main'
-                        : 'error.main',
-                      width: `${Math.round((m.creditsLeft / m.creditsTotal) * 100)}%`,
-                    }} />
-                  </Box>
-                ) : (
-                  <Typography variant="caption" color="text.secondary">credits</Typography>
-                )}
-              </TableCell>
-              <TableCell sx={{ fontSize: 12, color: 'text.secondary' }}>
-                {m.startDate}<br />{m.endDate}
-              </TableCell>
-              <TableCell align="center">
-                <Chip
-                  label={m.status}
-                  size="small"
-                  color={STATUS_COLOR[m.status]}
-                  variant="outlined"
-                />
-              </TableCell>
-              <TableCell sx={{ fontSize: 12, color: 'text.secondary', fontFamily: 'monospace' }}>
-                {m.lastPaymentId != null ? `#${m.lastPaymentId}` : '—'}
-              </TableCell>
-              <TableCell align="right">
-                <RowMenu m={m} onAdjustCredits={onAdjustCredits} onChangeStatus={onChangeStatus} onChangePeriod={onChangePeriod} onDelete={onDelete} />
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+    <AppTable
+      columns={columns}
+      rows={memberships}
+      loading={loading}
+      getRowKey={(m) => m.membershipId}
+      emptyMessage="No memberships yet."
+    />
   );
 }
