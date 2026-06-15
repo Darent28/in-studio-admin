@@ -5,7 +5,7 @@ import {
   useMediaQuery, useTheme,
 } from '@mui/material';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
-import { Logout, People, MeetingRoom, CardMembership, EventNote, SportsGymnastics, Menu as MenuIcon, CreditCard, Payments } from '@mui/icons-material';
+import { Logout, People, MeetingRoom, CardMembership, EventNote, SportsGymnastics, Menu as MenuIcon, CreditCard, Payments, CalendarMonth } from '@mui/icons-material';
 import { useAuthContext } from '../../context/AuthContext';
 
 const NAV_ITEMS = [
@@ -15,7 +15,8 @@ const NAV_ITEMS = [
   { label: 'Rooms',       path: '/rooms',       icon: <MeetingRoom fontSize="small" /> },
   { label: 'Plans',       path: '/plans',       icon: <CardMembership fontSize="small" /> },
   { label: 'Sessions',    path: '/sessions',    icon: <EventNote fontSize="small" /> },
-  { label: 'Payments',   path: '/payments',   icon: <Payments fontSize="small" /> },
+  { label: 'Payments',  path: '/payments',  icon: <Payments fontSize="small" /> },
+  { label: 'Schedule',  path: '/schedule',  icon: <CalendarMonth fontSize="small" /> },
 ];
 
 export function AdminLayout() {

@@ -6,6 +6,7 @@ import type { ClassSession, ClassSessionPayload } from '../types/classSession';
 import type { Instructor, InstructorPayload, InstructorUpdatePayload, UserSearchResult } from '../types/instructor';
 import type { Membership, MembershipPayload, AdjustCreditsPayload, ChangePeriodPayload, MembershipStatus } from '../types/membership';
 import type { Payment, PaymentPayload } from '../types/payment';
+import type { SessionSchedule } from '../types/sessionSchedule';
 
 const BASE = process.env.REACT_APP_API_URL ?? '/api';
 
@@ -106,10 +107,11 @@ export const api = {
     },
 
     sessions: {
-      getAll:  (token: string) => request<ClassSession[]>('/admin/sessions', { headers: authHeader(token) }),
-      create:  (payload: ClassSessionPayload, token: string) => request<ClassSession>('/admin/sessions', { method: 'POST', body: JSON.stringify(payload), headers: authHeader(token) }),
-      update:  (id: number, payload: ClassSessionPayload, token: string) => request<ClassSession>(`/admin/sessions/${id}`, { method: 'PUT', body: JSON.stringify(payload), headers: authHeader(token) }),
-      delete:  (id: number, token: string) => request<void>(`/admin/sessions/${id}`, { method: 'DELETE', headers: authHeader(token) }),
+      getAll:      (token: string) => request<ClassSession[]>('/admin/sessions', { headers: authHeader(token) }),
+      create:      (payload: ClassSessionPayload, token: string) => request<ClassSession>('/admin/sessions', { method: 'POST', body: JSON.stringify(payload), headers: authHeader(token) }),
+      update:      (id: number, payload: ClassSessionPayload, token: string) => request<ClassSession>(`/admin/sessions/${id}`, { method: 'PUT', body: JSON.stringify(payload), headers: authHeader(token) }),
+      delete:      (id: number, token: string) => request<void>(`/admin/sessions/${id}`, { method: 'DELETE', headers: authHeader(token) }),
+      getSchedule: (date: string, token: string) => request<SessionSchedule[]>(`/admin/sessions/schedule?date=${date}`, { headers: authHeader(token) }),
     },
 
     payments: {
