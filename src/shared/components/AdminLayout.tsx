@@ -5,10 +5,11 @@ import {
   useMediaQuery, useTheme,
 } from '@mui/material';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
-import { Logout, People, MeetingRoom, CardMembership, EventNote, SportsGymnastics, Menu as MenuIcon, CreditCard, Payments, CalendarMonth } from '@mui/icons-material';
+import { Logout, People, MeetingRoom, CardMembership, EventNote, SportsGymnastics, Menu as MenuIcon, CreditCard, Payments, CalendarMonth, LocalOffer, Dashboard } from '@mui/icons-material';
 import { useAuthContext } from '../../context/AuthContext';
 
 const NAV_ITEMS = [
+  { label: 'Dashboard',  path: '/',            icon: <Dashboard fontSize="small" />, exact: true },
   { label: 'Users',       path: '/users',       icon: <People fontSize="small" /> },
   { label: 'Instructors', path: '/instructors', icon: <SportsGymnastics fontSize="small" /> },
   { label: 'Memberships', path: '/memberships', icon: <CreditCard fontSize="small" /> },
@@ -17,6 +18,7 @@ const NAV_ITEMS = [
   { label: 'Sessions',    path: '/sessions',    icon: <EventNote fontSize="small" /> },
   { label: 'Payments',  path: '/payments',  icon: <Payments fontSize="small" /> },
   { label: 'Schedule',  path: '/schedule',  icon: <CalendarMonth fontSize="small" /> },
+  { label: 'Offers',    path: '/offers',    icon: <LocalOffer fontSize="small" /> },
 ];
 
 export function AdminLayout() {
@@ -29,7 +31,9 @@ export function AdminLayout() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
 
-  const currentTab = NAV_ITEMS.findIndex((item) => location.pathname.startsWith(item.path));
+  const currentTab = NAV_ITEMS.findIndex((item) =>
+    (item as any).exact ? location.pathname === item.path : location.pathname.startsWith(item.path)
+  );
   const currentItem = NAV_ITEMS[currentTab];
 
   const initials = user
@@ -114,7 +118,7 @@ export function AdminLayout() {
 
         <List disablePadding sx={{ pt: 1 }}>
           {NAV_ITEMS.map((item) => {
-            const isActive = location.pathname.startsWith(item.path);
+            const isActive = (item as any).exact ? location.pathname === item.path : location.pathname.startsWith(item.path);
             return (
               <ListItemButton
                 key={item.path}

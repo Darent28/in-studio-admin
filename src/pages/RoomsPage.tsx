@@ -63,7 +63,7 @@ export function RoomsPage() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3, flexWrap: 'wrap', gap: 1 }}>
         <Box>
           <Typography variant="h5" sx={{ fontWeight: 700 }}>Rooms</Typography>
           <Typography variant="body2" color="text.secondary">{rooms.length} total rooms</Typography>
@@ -77,7 +77,7 @@ export function RoomsPage() {
           placeholder="Search by name or location…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          sx={{ width: 280 }}
+          sx={{ width: { xs: '100%', sm: 280 } }}
           slotProps={{ input: { startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment> } }}
         />
       </Box>

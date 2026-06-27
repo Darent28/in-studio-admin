@@ -5,6 +5,15 @@ import type { MembershipPayload, AdjustCreditsPayload, ChangePeriodPayload, Memb
 
 const KEY = 'admin-memberships';
 
+export function useUserMemberships(userId: number | null) {
+  const { token } = useAuthContext();
+  return useQuery({
+    queryKey: [KEY, 'user', userId],
+    queryFn: () => api.admin.memberships.getByUser(userId!, token!),
+    enabled: !!token && userId != null,
+  });
+}
+
 export function useMemberships() {
   const { token } = useAuthContext();
   return useQuery({

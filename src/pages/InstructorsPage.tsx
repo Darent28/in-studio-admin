@@ -69,7 +69,7 @@ export function InstructorsPage() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3, flexWrap: 'wrap', gap: 1 }}>
         <Box>
           <Typography variant="h5" sx={{ fontWeight: 700 }}>Instructors</Typography>
           <Typography variant="body2" color="text.secondary">{instructors.length} total instructors</Typography>
@@ -83,7 +83,7 @@ export function InstructorsPage() {
           placeholder="Search by name, email or specialty…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          sx={{ width: 300 }}
+          sx={{ width: { xs: '100%', sm: 300 } }}
           slotProps={{ input: { startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment> } }}
         />
       </Box>

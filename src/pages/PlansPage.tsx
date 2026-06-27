@@ -63,7 +63,7 @@ export function PlansPage() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3, flexWrap: 'wrap', gap: 1 }}>
         <Box>
           <Typography variant="h5" sx={{ fontWeight: 700 }}>Plans</Typography>
           <Typography variant="body2" color="text.secondary">{plans.length} total plans</Typography>
@@ -77,7 +77,7 @@ export function PlansPage() {
           placeholder="Search by name or type…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          sx={{ width: 260 }}
+          sx={{ width: { xs: '100%', sm: 260 } }}
           slotProps={{ input: { startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment> } }}
         />
       </Box>

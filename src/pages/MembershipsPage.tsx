@@ -102,7 +102,7 @@ export function MembershipsPage() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3, flexWrap: 'wrap', gap: 1 }}>
         <Box>
           <Typography variant="h5" sx={{ fontWeight: 700 }}>Memberships</Typography>
           <Typography variant="body2" color="text.secondary">
@@ -118,7 +118,7 @@ export function MembershipsPage() {
           placeholder="Search by user, email or payment ID…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          sx={{ width: 260 }}
+          sx={{ width: { xs: '100%', sm: 260 } }}
           slotProps={{ input: { startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment> } }}
         />
         <ToggleButtonGroup
@@ -126,6 +126,7 @@ export function MembershipsPage() {
           exclusive
           onChange={(_, v) => { if (v) setFilterStatus(v); }}
           size="small"
+          sx={{ flexWrap: 'wrap' }}
         >
           {(['ALL', 'ACTIVE', 'FROZEN', 'CANCELLED', 'EXPIRED'] as const).map((s) => (
             <ToggleButton key={s} value={s} sx={{ fontSize: 11, px: 1.5 }}>{s}</ToggleButton>

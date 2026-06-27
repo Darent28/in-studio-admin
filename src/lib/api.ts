@@ -6,7 +6,9 @@ import type { ClassSession, ClassSessionPayload } from '../types/classSession';
 import type { Instructor, InstructorPayload, InstructorUpdatePayload, UserSearchResult } from '../types/instructor';
 import type { Membership, MembershipPayload, AdjustCreditsPayload, ChangePeriodPayload, MembershipStatus } from '../types/membership';
 import type { Payment, PaymentPayload } from '../types/payment';
+import type { Offer, OfferPayload } from '../types/offer';
 import type { SessionSchedule } from '../types/sessionSchedule';
+import type { Dashboard } from '../types/dashboard';
 
 const BASE = process.env.REACT_APP_API_URL ?? '/api';
 
@@ -118,6 +120,17 @@ export const api = {
       getAll:   (token: string) => request<Payment[]>('/admin/payments', { headers: authHeader(token) }),
       create:   (payload: PaymentPayload, token: string) => request<Payment>('/admin/payments', { method: 'POST', body: JSON.stringify(payload), headers: authHeader(token) }),
       confirm:  (id: number, token: string) => request<Payment>(`/admin/payments/${id}/confirm`, { method: 'PATCH', headers: authHeader(token) }),
+    },
+
+    offers: {
+      getAll:  (token: string, planId?: number) => request<Offer[]>(`/admin/offers${planId ? `?planId=${planId}` : ''}`, { headers: authHeader(token) }),
+      create:  (payload: OfferPayload, token: string) => request<Offer>('/admin/offers', { method: 'POST', body: JSON.stringify(payload), headers: authHeader(token) }),
+      update:  (id: number, payload: OfferPayload, token: string) => request<Offer>(`/admin/offers/${id}`, { method: 'PUT', body: JSON.stringify(payload), headers: authHeader(token) }),
+      delete:  (id: number, token: string) => request<void>(`/admin/offers/${id}`, { method: 'DELETE', headers: authHeader(token) }),
+    },
+
+    dashboard: {
+      get: (token: string) => request<Dashboard>('/admin/dashboard', { headers: authHeader(token) }),
     },
   },
 };

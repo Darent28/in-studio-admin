@@ -33,7 +33,7 @@ export function AppTable<T>({
   }
 
   return (
-    <TableContainer component={Paper} sx={{ border: '1px solid', borderColor: 'divider' }}>
+    <TableContainer component={Paper} sx={{ border: '1px solid', borderColor: 'divider', overflowX: 'auto' }}>
       <Table>
         <TableHead>
           <TableRow sx={{ '& th': { fontWeight: 700, color: 'text.secondary', fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5 } }}>

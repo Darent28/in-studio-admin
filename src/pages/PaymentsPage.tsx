@@ -67,7 +67,7 @@ export function PaymentsPage() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3, flexWrap: 'wrap', gap: 1 }}>
         <Box>
           <Typography variant="h5" sx={{ fontWeight: 700 }}>Payments</Typography>
           <Typography variant="body2" color="text.secondary">
@@ -83,7 +83,7 @@ export function PaymentsPage() {
           placeholder="Search user, plan or method…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          sx={{ width: 280 }}
+          sx={{ width: { xs: '100%', sm: 280 } }}
           slotProps={{ input: { startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment> } }}
         />
         <ToggleButtonGroup
@@ -91,6 +91,7 @@ export function PaymentsPage() {
           exclusive
           onChange={(_, v) => { if (v) setFilterStatus(v); }}
           size="small"
+          sx={{ flexWrap: 'wrap' }}
         >
           {(['ALL', 'PENDING', 'COMPLETED', 'FAILED', 'REFUNDED'] as const).map((s) => (
             <ToggleButton key={s} value={s} sx={{ fontSize: 11, px: 1.5 }}>{s}</ToggleButton>

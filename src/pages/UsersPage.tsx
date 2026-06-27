@@ -5,6 +5,7 @@ import { AppButton } from '../shared/components/AppButton';
 import { ConfirmDialog } from '../shared/components/ConfirmDialog';
 import { UserTable } from '../features/users/components/UserTable';
 import { UserFormModal } from '../features/users/components/UserFormModal';
+import { UserProfileDrawer } from '../features/users/components/UserProfileDrawer';
 import { useUsers, useCreateUser, useUpdateUser, useDeleteUser } from '../features/users/hooks/useUsers';
 import type { AdminUser, AdminUserPayload } from '../types/adminUser';
 
@@ -17,6 +18,7 @@ export function UsersPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [selected, setSelected] = useState<AdminUser | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null);
+  const [profileUser, setProfileUser] = useState<AdminUser | null>(null);
   const [formError, setFormError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [search, setSearch] = useState('');
@@ -65,7 +67,7 @@ export function UsersPage() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3, flexWrap: 'wrap', gap: 1 }}>
         <Box>
           <Typography variant="h5" sx={{ fontWeight: 700 }}>Users</Typography>
           <Typography variant="body2" color="text.secondary">{users.length} total users</Typography>
@@ -79,7 +81,7 @@ export function UsersPage() {
           placeholder="Search by name or email…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          sx={{ width: 280 }}
+          sx={{ width: { xs: '100%', sm: 280 } }}
           slotProps={{ input: { startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment> } }}
         />
       </Box>
@@ -89,6 +91,7 @@ export function UsersPage() {
         loading={isLoading}
         onEdit={openEdit}
         onDelete={setDeleteTarget}
+        onProfile={setProfileUser}
       />
 
       <UserFormModal
@@ -108,6 +111,8 @@ export function UsersPage() {
         message={`Are you sure you want to delete ${deleteTarget?.firstName} ${deleteTarget?.lastName}? This action cannot be undone.`}
         loading={deleteUser.isPending}
       />
+
+      <UserProfileDrawer user={profileUser} onClose={() => setProfileUser(null)} />
 
       <Snackbar
         open={!!successMsg}
