@@ -1,5 +1,5 @@
 import {
-  Drawer, Box, Typography, Avatar, Chip, Divider, CircularProgress,
+  Drawer, Box, Typography, Avatar, Chip, CircularProgress,
 } from '@mui/material';
 import { CheckCircle, Cancel } from '@mui/icons-material';
 import { AppTable } from '../../../shared/components/AppTable';

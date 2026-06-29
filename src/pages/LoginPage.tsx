@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import { Box, Typography, Link } from '@mui/material';
+import { Box, Link } from '@mui/material';
 import { AuthLayout } from '../shared/components/AuthLayout';
 import { PasswordField } from '../shared/components/PasswordField';
 import { AppButton } from '../shared/components/AppButton';

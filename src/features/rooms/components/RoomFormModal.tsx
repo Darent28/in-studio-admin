@@ -27,13 +27,6 @@ interface FormState {
   activeSeats: string[];
 }
 
-function allSeatsFor(rows: number, cols: number): string[] {
-  const seats: string[] = [];
-  for (let r = 0; r < rows; r++)
-    for (let c = 0; c < cols; c++)
-      seats.push(seatCode(r, c));
-  return seats;
-}
 
 function parseLayoutData(data: string | null | undefined): string[] {
   if (!data) return [];
