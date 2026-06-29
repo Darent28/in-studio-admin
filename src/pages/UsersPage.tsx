@@ -41,10 +41,10 @@ export function UsersPage() {
     try {
       if (selected) {
         await updateUser.mutateAsync({ id: selected.userId, payload });
-        setSuccessMsg('User updated successfully.');
+        setSuccessMsg('Member updated successfully.');
       } else {
         await createUser.mutateAsync(payload);
-        setSuccessMsg('User created successfully.');
+        setSuccessMsg('Member created successfully.');
       }
       setFormOpen(false);
     } catch (err: any) {
@@ -56,7 +56,7 @@ export function UsersPage() {
     if (!deleteTarget) return;
     try {
       await deleteUser.mutateAsync(deleteTarget.userId);
-      setSuccessMsg('User deleted successfully.');
+      setSuccessMsg('Member deleted successfully.');
       setDeleteTarget(null);
     } catch {
       setDeleteTarget(null);
@@ -69,10 +69,10 @@ export function UsersPage() {
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3, flexWrap: 'wrap', gap: 1 }}>
         <Box>
-          <Typography variant="h5" sx={{ fontWeight: 700 }}>Users</Typography>
-          <Typography variant="body2" color="text.secondary">{users.length} total users</Typography>
+          <Typography variant="h5" sx={{ fontWeight: 700 }}>Members</Typography>
+          <Typography variant="body2" color="text.secondary">{users.length} total members</Typography>
         </Box>
-        <AppButton text="Create User" onClick={openCreate} />
+        <AppButton text="Create Member" onClick={openCreate} />
       </Box>
 
       <Box sx={{ mb: 2 }}>
@@ -107,7 +107,7 @@ export function UsersPage() {
         open={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
-        title="Delete User"
+        title="Delete Member"
         message={`Are you sure you want to delete ${deleteTarget?.firstName} ${deleteTarget?.lastName}? This action cannot be undone.`}
         loading={deleteUser.isPending}
       />
