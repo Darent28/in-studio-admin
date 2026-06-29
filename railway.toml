@@ -1,6 +1,2 @@
 [build]
-builder = "nixpacks"
-buildCommand = "npm run build"
-
-[deploy]
-startCommand = "serve -s build"
+builder = "dockerfile"
