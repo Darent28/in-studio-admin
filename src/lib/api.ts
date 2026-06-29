@@ -10,7 +10,7 @@ import type { Offer, OfferPayload } from '../types/offer';
 import type { SessionSchedule } from '../types/sessionSchedule';
 import type { Dashboard } from '../types/dashboard';
 
-const BASE = process.env.REACT_APP_API_URL ?? '/api';
+const BASE = process.env.REACT_APP_API_URL;
 
 export interface AuthResponse {
   token: string;
@@ -123,10 +123,12 @@ export const api = {
     },
 
     offers: {
-      getAll:  (token: string, planId?: number) => request<Offer[]>(`/admin/offers${planId ? `?planId=${planId}` : ''}`, { headers: authHeader(token) }),
-      create:  (payload: OfferPayload, token: string) => request<Offer>('/admin/offers', { method: 'POST', body: JSON.stringify(payload), headers: authHeader(token) }),
-      update:  (id: number, payload: OfferPayload, token: string) => request<Offer>(`/admin/offers/${id}`, { method: 'PUT', body: JSON.stringify(payload), headers: authHeader(token) }),
-      delete:  (id: number, token: string) => request<void>(`/admin/offers/${id}`, { method: 'DELETE', headers: authHeader(token) }),
+      getAll:   (token: string, planId?: number) => request<Offer[]>(`/admin/offers${planId ? `?planId=${planId}` : ''}`, { headers: authHeader(token) }),
+      create:   (payload: OfferPayload, token: string) => request<Offer>('/admin/offers', { method: 'POST', body: JSON.stringify(payload), headers: authHeader(token) }),
+      update:   (id: number, payload: OfferPayload, token: string) => request<Offer>(`/admin/offers/${id}`, { method: 'PUT', body: JSON.stringify(payload), headers: authHeader(token) }),
+      delete:   (id: number, token: string) => request<void>(`/admin/offers/${id}`, { method: 'DELETE', headers: authHeader(token) }),
+      validate: (planId: number, date: string, time: string, token: string) =>
+        request<Offer | undefined>(`/admin/offers/validate?planId=${planId}&date=${date}&time=${encodeURIComponent(time)}`, { headers: authHeader(token) }),
     },
 
     dashboard: {

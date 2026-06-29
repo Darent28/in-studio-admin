@@ -1,12 +1,14 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box, Typography, Grid, Paper, CircularProgress, Alert,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Avatar, Chip, LinearProgress, Divider,
+  Avatar, Chip, LinearProgress, Divider, Button,
 } from '@mui/material';
 import {
   CreditCard, Money, TrendingUp, People,
   CalendarMonth, ArrowForward, EmojiEvents, Inventory2,
+  VisibilityOff, Visibility,
 } from '@mui/icons-material';
 import { AppButton } from '../shared/components/AppButton';
 import { useDashboard } from '../features/dashboard/hooks/useDashboard';
@@ -440,6 +442,7 @@ function MemberCreditsTable({ credits }: { credits: MemberCredits[] }) {
 // ─── Page ────────────────────────────────────────────────────────────────────
 
 export function HomePage() {
+  const [blurred, setBlurred] = useState(true);
   const { data, isLoading, isError } = useDashboard();
 
   if (isLoading) {
@@ -455,71 +458,124 @@ export function HomePage() {
   }
 
   return (
-    <Box>
-      <Typography variant="h5" sx={{ fontWeight: 700, mb: 3 }}>Dashboard</Typography>
+    <Box sx={{ position: 'relative' }}>
+      {/* ── Header row ── */}
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+        <Typography variant="h5" sx={{ fontWeight: 700 }}>Dashboard</Typography>
+        {!blurred && (
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<VisibilityOff fontSize="small" />}
+            onClick={() => setBlurred(true)}
+            sx={{ fontSize: 13 }}
+          >
+            Hide
+          </Button>
+        )}
+      </Box>
 
-      {/* ── Stat cards ── */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid size={{ xs: 6, sm: 3 }}>
-          <StatCard
-            label="Card Earnings"
-            value={fmtCurrency(data.totalEarningsCard)}
-            icon={<CreditCard />}
-            color="primary"
-          />
-        </Grid>
-        <Grid size={{ xs: 6, sm: 3 }}>
-          <StatCard
-            label="Cash Earnings"
-            value={fmtCurrency(data.totalEarningsCash)}
-            icon={<Money />}
-            color="success"
-          />
-        </Grid>
-        <Grid size={{ xs: 6, sm: 3 }}>
-          <StatCard
-            label="Total Earnings"
-            value={fmtCurrency(data.totalEarnings)}
-            icon={<TrendingUp />}
-            color="warning"
-            sub="All completed payments"
-          />
-        </Grid>
-        <Grid size={{ xs: 6, sm: 3 }}>
-          <StatCard
-            label="Total Members"
-            value={data.totalMembers.toLocaleString()}
-            icon={<People />}
-            color="secondary"
-          />
-        </Grid>
-      </Grid>
+      {/* ── Blurred overlay ── */}
+      {blurred && (
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 10,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 2,
+          }}
+        >
+          <Button
+            variant="contained"
+            size="large"
+            startIcon={<Visibility />}
+            onClick={() => setBlurred(false)}
+            sx={{
+              px: 4, py: 1.5, fontSize: 15, fontWeight: 700,
+              backdropFilter: 'blur(4px)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.24)',
+            }}
+          >
+            View Dashboard
+          </Button>
+        </Box>
+      )}
 
-      {/* ── Today's classes + Recent purchases ── */}
-      <Grid container spacing={2} sx={{ mb: 2 }}>
-        <Grid size={{ xs: 12, md: 7 }}>
-          <TodayClasses sessions={data.todayClasses} />
+      {/* ── Dashboard content ── */}
+      <Box
+        sx={{
+          filter: blurred ? 'blur(8px)' : 'none',
+          transition: 'filter 0.3s ease',
+          pointerEvents: blurred ? 'none' : 'auto',
+          userSelect: blurred ? 'none' : 'auto',
+        }}
+      >
+        {/* ── Stat cards ── */}
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          <Grid size={{ xs: 6, sm: 3 }}>
+            <StatCard
+              label="Card Earnings"
+              value={fmtCurrency(data.totalEarningsCard)}
+              icon={<CreditCard />}
+              color="primary"
+            />
+          </Grid>
+          <Grid size={{ xs: 6, sm: 3 }}>
+            <StatCard
+              label="Cash Earnings"
+              value={fmtCurrency(data.totalEarningsCash)}
+              icon={<Money />}
+              color="success"
+            />
+          </Grid>
+          <Grid size={{ xs: 6, sm: 3 }}>
+            <StatCard
+              label="Total Earnings"
+              value={fmtCurrency(data.totalEarnings)}
+              icon={<TrendingUp />}
+              color="warning"
+              sub="All completed payments"
+            />
+          </Grid>
+          <Grid size={{ xs: 6, sm: 3 }}>
+            <StatCard
+              label="Total Members"
+              value={data.totalMembers.toLocaleString()}
+              icon={<People />}
+              color="secondary"
+            />
+          </Grid>
         </Grid>
-        <Grid size={{ xs: 12, md: 5 }}>
-          <RecentPurchases payments={data.recentPurchases} />
-        </Grid>
-      </Grid>
 
-      {/* ── Top attendees + Top packages + Recent members ── */}
-      <Grid container spacing={2} sx={{ mb: 2 }}>
-        <Grid size={{ xs: 12, sm: 4 }}>
-          <TopAttendees attendees={data.topAttendees} />
+        {/* ── Today's classes + Recent purchases ── */}
+        <Grid container spacing={2} sx={{ mb: 2 }}>
+          <Grid size={{ xs: 12, md: 7 }}>
+            <TodayClasses sessions={data.todayClasses} />
+          </Grid>
+          <Grid size={{ xs: 12, md: 5 }}>
+            <RecentPurchases payments={data.recentPurchases} />
+          </Grid>
         </Grid>
-        <Grid size={{ xs: 12, sm: 4 }}>
-          <TopPackages packages={data.topPackages} />
-        </Grid>
-        <Grid size={{ xs: 12, sm: 4 }}>
-          <RecentMembers members={data.recentMembers} />
-        </Grid>
-      </Grid>
 
-      {/* ── Member credits table ── */}
-      <MemberCreditsTable credits={data.memberCredits} />
+        {/* ── Top attendees + Top packages + Recent members ── */}
+        <Grid container spacing={2} sx={{ mb: 2 }}>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <TopAttendees attendees={data.topAttendees} />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <TopPackages packages={data.topPackages} />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <RecentMembers members={data.recentMembers} />
+          </Grid>
+        </Grid>
+
+        {/* ── Member credits table ── */}
+        <MemberCreditsTable credits={data.memberCredits} />
+      </Box>
     </Box>
   );
 }

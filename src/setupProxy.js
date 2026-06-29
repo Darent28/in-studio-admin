@@ -1,10 +1,12 @@
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
+const target = process.env.REACT_APP_PROXY_TARGET;
+
 module.exports = function (app) {
   app.use(
     '/api',
     createProxyMiddleware({
-      target: 'https://in-studio-backend-production.up.railway.app',
+      target,
       changeOrigin: true,
     })
   );
