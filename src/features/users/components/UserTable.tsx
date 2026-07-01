@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { IconButton, Menu, MenuItem, ListItemIcon, Chip } from '@mui/material';
 import { Settings, Edit, Delete, CheckCircle, Cancel, Person } from '@mui/icons-material';
 import { AppTable } from '../../../shared/components/AppTable';
+import { useAuthContext } from '../../../context/AuthContext';
 import type { ColDef } from '../../../shared/components/AppTable';
 import type { AdminUser } from '../../../types/adminUser';
 
@@ -17,11 +18,12 @@ interface Props {
   onProfile: (user: AdminUser) => void;
 }
 
-function RowMenu({ user, onEdit, onDelete, onProfile }: {
+function RowMenu({ user, onEdit, onDelete, onProfile, isStaff }: {
   user: AdminUser;
   onEdit: (u: AdminUser) => void;
   onDelete: (u: AdminUser) => void;
   onProfile: (u: AdminUser) => void;
+  isStaff: boolean;
 }) {
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
   return (
@@ -33,18 +35,24 @@ function RowMenu({ user, onEdit, onDelete, onProfile }: {
         <MenuItem onClick={() => { setAnchor(null); onProfile(user); }}>
           <ListItemIcon><Person fontSize="small" /></ListItemIcon>View profile
         </MenuItem>
-        <MenuItem onClick={() => { setAnchor(null); onEdit(user); }}>
-          <ListItemIcon><Edit fontSize="small" /></ListItemIcon>Edit
-        </MenuItem>
-        <MenuItem onClick={() => { setAnchor(null); onDelete(user); }} sx={{ color: 'error.main' }}>
-          <ListItemIcon><Delete fontSize="small" color="error" /></ListItemIcon>Delete
-        </MenuItem>
+        {!isStaff && (
+          <MenuItem onClick={() => { setAnchor(null); onEdit(user); }}>
+            <ListItemIcon><Edit fontSize="small" /></ListItemIcon>Edit
+          </MenuItem>
+        )}
+        {!isStaff && (
+          <MenuItem onClick={() => { setAnchor(null); onDelete(user); }} sx={{ color: 'error.main' }}>
+            <ListItemIcon><Delete fontSize="small" color="error" /></ListItemIcon>Delete
+          </MenuItem>
+        )}
       </Menu>
     </>
   );
 }
 
 export function UserTable({ users, loading, onEdit, onDelete, onProfile }: Props) {
+  const { user } = useAuthContext();
+  const isStaff = user?.role === 'STAFF';
   const columns: ColDef<AdminUser>[] = [
     { key: 'name', header: 'Name', sx: { fontWeight: 500 }, render: (u) => `${u.firstName} ${u.lastName}` },
     { key: 'email', header: 'Email', render: (u) => u.email },
@@ -53,7 +61,7 @@ export function UserTable({ users, loading, onEdit, onDelete, onProfile }: Props
     { key: 'active', header: 'Active', render: (u) => u.active ? <CheckCircle fontSize="small" color="success" /> : <Cancel fontSize="small" color="disabled" /> },
     { key: 'verified', header: 'Verified', render: (u) => u.emailVerified ? <CheckCircle fontSize="small" color="success" /> : <Cancel fontSize="small" color="disabled" /> },
     { key: 'created', header: 'Created', sx: { color: 'text.secondary', fontSize: 13 }, render: (u) => new Date(u.createdAt).toLocaleDateString() },
-    { key: 'actions', header: '', align: 'right', render: (u) => <RowMenu user={u} onEdit={onEdit} onDelete={onDelete} onProfile={onProfile} /> },
+    { key: 'actions', header: '', align: 'right', render: (u) => <RowMenu user={u} onEdit={onEdit} onDelete={onDelete} onProfile={onProfile} isStaff={isStaff} /> },
   ];
 
   return (
