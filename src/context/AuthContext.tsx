@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (email: string, password: string): Promise<true | string> => {
     try {
       const data = await api.auth.login(email, password);
-      if (data.user.role !== 'ADMIN') {
+      if (data.user.role !== 'ADMIN' && data.user.role !== 'STAFF') {
         return 'You are not authorized to access this panel.';
       }
       persist(data.token, data.expiresAt, data.user);
