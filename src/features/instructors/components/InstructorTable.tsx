@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Avatar, Box, Chip, IconButton, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material';
 import { Settings, Edit, Delete } from '@mui/icons-material';
 import { AppTable } from '../../../shared/components/AppTable';
+import { useAuthContext } from '../../../context/AuthContext';
 import type { ColDef } from '../../../shared/components/AppTable';
 import type { Instructor } from '../../../types/instructor';
 
@@ -16,8 +17,9 @@ function initials(first: string, last: string) {
   return `${first[0] ?? ''}${last[0] ?? ''}`.toUpperCase();
 }
 
-function RowMenu({ instructor, onEdit, onDelete }: { instructor: Instructor; onEdit: (i: Instructor) => void; onDelete: (i: Instructor) => void }) {
+function RowMenu({ instructor, onEdit, onDelete, isStaff }: { instructor: Instructor; onEdit: (i: Instructor) => void; onDelete: (i: Instructor) => void; isStaff: boolean }) {
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
+  if (isStaff) return null;
   return (
     <>
       <IconButton size="small" onClick={(e) => setAnchor(e.currentTarget)}><Settings fontSize="small" /></IconButton>
@@ -36,6 +38,8 @@ function RowMenu({ instructor, onEdit, onDelete }: { instructor: Instructor; onE
 }
 
 export function InstructorTable({ instructors, loading, onEdit, onDelete }: Props) {
+  const { user } = useAuthContext();
+  const isStaff = user?.role === 'STAFF';
   const columns: ColDef<Instructor>[] = [
     {
       key: 'instructor', header: 'Instructor',
@@ -65,7 +69,7 @@ export function InstructorTable({ instructors, loading, onEdit, onDelete }: Prop
           color={i.active ? 'success' : 'default'} variant="outlined" />
       ),
     },
-    { key: 'actions', header: '', align: 'right', render: (i) => <RowMenu instructor={i} onEdit={onEdit} onDelete={onDelete} /> },
+    { key: 'actions', header: '', align: 'right', render: (i) => <RowMenu instructor={i} onEdit={onEdit} onDelete={onDelete} isStaff={isStaff} /> },
   ];
 
   return (
