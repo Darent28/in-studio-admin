@@ -7,6 +7,7 @@ import type { Instructor, InstructorPayload, InstructorUpdatePayload, UserSearch
 import type { Membership, MembershipPayload, AdjustCreditsPayload, ChangePeriodPayload, MembershipStatus } from '../types/membership';
 import type { Payment, PaymentPayload } from '../types/payment';
 import type { Offer, OfferPayload } from '../types/offer';
+import type { Coupon, CouponPayload } from '../types/coupon';
 import type { SessionSchedule } from '../types/sessionSchedule';
 import type { Dashboard } from '../types/dashboard';
 
@@ -133,6 +134,13 @@ export const api = {
 
     dashboard: {
       get: (token: string) => request<Dashboard>('/admin/dashboard', { headers: authHeader(token) }),
+    },
+
+    coupons: {
+      getAll:  (token: string) => request<Coupon[]>('/admin/coupons', { headers: authHeader(token) }),
+      create:  (payload: CouponPayload, token: string) => request<Coupon>('/admin/coupons', { method: 'POST', body: JSON.stringify(payload), headers: authHeader(token) }),
+      update:  (id: number, payload: CouponPayload, token: string) => request<Coupon>(`/admin/coupons/${id}`, { method: 'PUT', body: JSON.stringify(payload), headers: authHeader(token) }),
+      delete:  (id: number, token: string) => request<void>(`/admin/coupons/${id}`, { method: 'DELETE', headers: authHeader(token) }),
     },
   },
 };
