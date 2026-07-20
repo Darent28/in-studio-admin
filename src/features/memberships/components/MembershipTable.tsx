@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Box, Chip, IconButton, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material';
 import { Settings, Delete, CreditScore, SwapHoriz, DateRange } from '@mui/icons-material';
 import { AppTable } from '../../../shared/components/AppTable';
+import { useAuthContext } from '../../../context/AuthContext';
 import type { ColDef } from '../../../shared/components/AppTable';
 import type { Membership, MembershipStatus } from '../../../types/membership';
 
@@ -52,6 +53,8 @@ function RowMenu({ m, onAdjustCredits, onChangeStatus, onChangePeriod, onDelete 
   onDelete: (m: Membership) => void;
 }) {
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
+  const { user } = useAuthContext();
+  if (user?.role === 'STAFF') return null;
   return (
     <>
       <IconButton size="small" onClick={(e) => setAnchor(e.currentTarget)}>
@@ -87,10 +90,11 @@ export function MembershipTable({ memberships, loading, onAdjustCredits, onChang
           <Typography variant="caption" color="text.secondary">{m.userEmail}</Typography>
         </Box>
       ),
+      exportValue: (m) => `${m.userFirstName} ${m.userLastName}`,
     },
-    { key: 'credits', header: 'Credits', render: (m) => <CreditsCell m={m} /> },
-    { key: 'period', header: 'Period', sx: { fontSize: 12, color: 'text.secondary' }, render: (m) => <>{m.startDate}<br />{m.endDate}</> },
-    { key: 'status', header: 'Status', align: 'center', render: (m) => <Chip label={m.status} size="small" color={STATUS_COLOR[m.status]} sx={{ fontSize: 11 }} /> },
+    { key: 'credits', header: 'Credits', render: (m) => <CreditsCell m={m} />, exportValue: (m) => `${m.creditsLeft} / ${m.creditsTotal}` },
+    { key: 'period', header: 'Period', sx: { fontSize: 12, color: 'text.secondary' }, render: (m) => <>{m.startDate}<br />{m.endDate}</>, exportValue: (m) => `${m.startDate} → ${m.endDate}` },
+    { key: 'status', header: 'Status', align: 'center', render: (m) => <Chip label={m.status} size="small" color={STATUS_COLOR[m.status]} sx={{ fontSize: 11 }} />, exportValue: (m) => m.status },
     { key: 'paymentId', header: 'Payment ID', sx: { fontSize: 12, color: 'text.secondary', fontFamily: 'monospace' }, render: (m) => m.lastPaymentId != null ? `#${m.lastPaymentId}` : '—' },
     {
       key: 'actions', header: '', align: 'right',
@@ -105,6 +109,7 @@ export function MembershipTable({ memberships, loading, onAdjustCredits, onChang
       loading={loading}
       getRowKey={(m) => m.membershipId}
       emptyMessage="No memberships yet."
+      title="Memberships"
     />
   );
 }

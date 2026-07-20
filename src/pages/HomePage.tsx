@@ -1,14 +1,16 @@
 import { useState } from 'react';
+import * as XLSX from 'xlsx';
 import { useNavigate } from 'react-router-dom';
 import {
   Box, Typography, Grid, Paper, CircularProgress, Alert,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Avatar, Chip, LinearProgress, Divider, Button,
+  Dialog, DialogTitle, DialogContent, IconButton,
 } from '@mui/material';
 import {
   CreditCard, Money, TrendingUp, People,
   CalendarMonth, ArrowForward, EmojiEvents, Inventory2,
-  VisibilityOff, Visibility,
+  VisibilityOff, Visibility, Download, OpenInFull, Close,
 } from '@mui/icons-material';
 import { AppButton } from '../shared/components/AppButton';
 import { useDashboard } from '../features/dashboard/hooks/useDashboard';
@@ -94,86 +96,120 @@ function SectionCard({ title, action, children }: { title: React.ReactNode; acti
 
 // ─── TodayClasses ────────────────────────────────────────────────────────────
 
+function SessionsTableBody({ sessions }: { sessions: SessionSchedule[] }) {
+  return (
+    <Table size="small">
+      <TableHead>
+        <TableRow sx={{ '& th': { fontWeight: 700, fontSize: 11, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 0.5 } }}>
+          <TableCell>Time</TableCell>
+          <TableCell>Session</TableCell>
+          <TableCell>Instructor</TableCell>
+          <TableCell>Room</TableCell>
+          <TableCell align="center">Spots</TableCell>
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {sessions.map((s) => {
+          const spots = Math.max(0, s.capacity - s.reservedCount);
+          return (
+            <TableRow key={s.sessionId} hover>
+              <TableCell sx={{ fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap' }}>
+                {s.startTime}
+                <Typography variant="caption" sx={{ display: 'block' }} color="text.secondary">{s.endTime}</Typography>
+              </TableCell>
+              <TableCell sx={{ fontWeight: 500 }}>{s.title ?? `#${s.sessionId}`}</TableCell>
+              <TableCell sx={{ color: 'text.secondary', fontSize: 13 }}>
+                {s.instructorFirstName} {s.instructorLastName}
+              </TableCell>
+              <TableCell sx={{ color: 'text.secondary', fontSize: 13 }}>{s.roomName}</TableCell>
+              <TableCell align="center">
+                <Chip
+                  label={spots === 0 ? 'Full' : `${spots} left`}
+                  size="small"
+                  color={spots === 0 ? 'error' : spots <= 3 ? 'warning' : 'success'}
+                  sx={{ fontSize: 11 }}
+                />
+              </TableCell>
+            </TableRow>
+          );
+        })}
+      </TableBody>
+    </Table>
+  );
+}
+
 function TodayClasses({ sessions }: { sessions: SessionSchedule[] }) {
   const navigate = useNavigate();
-  const shown = sessions.slice(0, 5);
+  const [modalOpen, setModalOpen] = useState(false);
+  const MAX = 5;
+  const shown = sessions.slice(0, MAX);
+  const hasMore = sessions.length > MAX;
+
+  const handleExport = () => {
+    const rows = sessions.map((s) => ({
+      Time: `${s.startTime} – ${s.endTime}`,
+      Session: s.title ?? `#${s.sessionId}`,
+      Instructor: `${s.instructorFirstName} ${s.instructorLastName}`,
+      Room: s.roomName,
+      'Spots Left': Math.max(0, s.capacity - s.reservedCount),
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Today's Classes");
+    XLSX.writeFile(wb, "todays-classes.xlsx");
+  };
 
   return (
-    <SectionCard
-      title={
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <CalendarMonth fontSize="small" color="primary" />
-          Today's Classes
-          <Chip label={sessions.length} size="small" color="primary" sx={{ fontSize: 11, height: 20 }} />
-        </Box>
-      }
-      action={
-        <AppButton
-          text="View schedule"
-          onClick={() => navigate('/schedule')}
-          size="small"
-          sx={{ fontSize: 12 }}
-        />
-      }
-    >
-      {shown.length === 0 ? (
-        <Box sx={{ py: 4, textAlign: 'center', color: 'text.secondary' }}>
-          <Typography variant="body2">No classes scheduled today.</Typography>
-        </Box>
-      ) : (
-        <TableContainer sx={{ overflowX: 'auto' }}>
-          <Table size="small">
-            <TableHead>
-              <TableRow sx={{ '& th': { fontWeight: 700, fontSize: 11, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 0.5 } }}>
-                <TableCell>Time</TableCell>
-                <TableCell>Session</TableCell>
-                <TableCell>Instructor</TableCell>
-                <TableCell>Room</TableCell>
-                <TableCell align="center">Spots</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {shown.map((s) => {
-                const spots = Math.max(0, s.capacity - s.reservedCount);
-                return (
-                  <TableRow key={s.sessionId} hover>
-                    <TableCell sx={{ fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap' }}>
-                      {s.startTime}
-                      <Typography variant="caption" sx={{ display: 'block' }} color="text.secondary">{s.endTime}</Typography>
-                    </TableCell>
-                    <TableCell sx={{ fontWeight: 500 }}>{s.title ?? `#${s.sessionId}`}</TableCell>
-                    <TableCell sx={{ color: 'text.secondary', fontSize: 13 }}>
-                      {s.instructorFirstName} {s.instructorLastName}
-                    </TableCell>
-                    <TableCell sx={{ color: 'text.secondary', fontSize: 13 }}>{s.roomName}</TableCell>
-                    <TableCell align="center">
-                      <Chip
-                        label={spots === 0 ? 'Full' : `${spots} left`}
-                        size="small"
-                        color={spots === 0 ? 'error' : spots <= 3 ? 'warning' : 'success'}
-                        sx={{ fontSize: 11 }}
-                      />
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
-      {sessions.length > 5 && (
-        <Box sx={{ px: 2.5, py: 1.5, borderTop: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-          <Typography
-            variant="caption"
-            color="primary"
-            sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 0.5, fontWeight: 600 }}
-            onClick={() => navigate('/schedule')}
-          >
-            +{sessions.length - 5} more <ArrowForward sx={{ fontSize: 12 }} />
-          </Typography>
-        </Box>
-      )}
-    </SectionCard>
+    <>
+      <SectionCard
+        title={
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <CalendarMonth fontSize="small" color="primary" />
+            Today's Classes
+            <Chip label={sessions.length} size="small" color="primary" sx={{ fontSize: 11, height: 20 }} />
+          </Box>
+        }
+        action={
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button size="small" startIcon={<Download fontSize="small" />} onClick={handleExport} sx={{ textTransform: 'none', fontSize: 12 }}>Excel</Button>
+            <AppButton text="View schedule" onClick={() => navigate('/schedule')} size="small" sx={{ fontSize: 12 }} />
+          </Box>
+        }
+      >
+        {shown.length === 0 ? (
+          <Box sx={{ py: 4, textAlign: 'center', color: 'text.secondary' }}>
+            <Typography variant="body2">No classes scheduled today.</Typography>
+          </Box>
+        ) : (
+          <TableContainer sx={{ overflowX: 'auto' }}>
+            <SessionsTableBody sessions={shown} />
+          </TableContainer>
+        )}
+        {hasMore && (
+          <Box sx={{ px: 2, py: 1, borderTop: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Typography variant="caption" color="text.secondary">Showing {MAX} of {sessions.length}</Typography>
+            <Button size="small" startIcon={<OpenInFull fontSize="small" />} onClick={() => setModalOpen(true)} sx={{ textTransform: 'none', fontSize: 12 }}>
+              View all {sessions.length}
+            </Button>
+          </Box>
+        )}
+      </SectionCard>
+
+      <Dialog open={modalOpen} onClose={() => setModalOpen(false)} maxWidth="lg" fullWidth>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700 }}>Today's Classes</Typography>
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            <Button size="small" startIcon={<Download fontSize="small" />} onClick={handleExport} sx={{ textTransform: 'none', fontSize: 12 }}>Excel</Button>
+            <IconButton size="small" onClick={() => setModalOpen(false)}><Close fontSize="small" /></IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent sx={{ p: 0 }}>
+          <TableContainer sx={{ overflowX: 'auto' }}>
+            <SessionsTableBody sessions={sessions} />
+          </TableContainer>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -372,70 +408,115 @@ function RecentMembers({ members }: { members: RecentMember[] }) {
 
 // ─── MemberCreditsTable ──────────────────────────────────────────────────────
 
-function MemberCreditsTable({ credits }: { credits: MemberCredits[] }) {
+function CreditsTableBody({ credits }: { credits: MemberCredits[] }) {
   return (
-    <SectionCard title={`Member Class Credits · ${credits.length} active`}>
-      {credits.length === 0 ? (
-        <Box sx={{ py: 4, textAlign: 'center', color: 'text.secondary' }}>
-          <Typography variant="body2">No active memberships.</Typography>
-        </Box>
-      ) : (
-        <TableContainer sx={{ overflowX: 'auto' }}>
-          <Table size="small">
-            <TableHead>
-              <TableRow sx={{ '& th': { fontWeight: 700, fontSize: 11, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 0.5 } }}>
-                <TableCell>Member</TableCell>
-                <TableCell>Email</TableCell>
-                <TableCell align="center">Credits Left</TableCell>
-                <TableCell align="center">Credits Total</TableCell>
-                <TableCell align="center">Usage</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {credits.map((c) => {
-                const pct = c.creditsTotal > 0 ? Math.round(((c.creditsTotal - c.creditsLeft) / c.creditsTotal) * 100) : 0;
-                const color = c.creditsLeft === 0 ? 'error' : c.creditsLeft <= 2 ? 'warning' : 'success';
-                return (
-                  <TableRow key={c.membershipId} hover>
-                    <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Avatar sx={{ width: 28, height: 28, fontSize: 11, bgcolor: 'primary.main' }}>
-                          {initials(c.firstName, c.lastName)}
-                        </Avatar>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                          {c.firstName} {c.lastName}
-                        </Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell sx={{ color: 'text.secondary', fontSize: 13 }}>{c.email}</TableCell>
-                    <TableCell align="center">
-                      <Chip
-                        label={c.creditsLeft}
-                        size="small"
-                        color={color}
-                        sx={{ fontSize: 12, fontWeight: 700, minWidth: 36 }}
-                      />
-                    </TableCell>
-                    <TableCell align="center" sx={{ color: 'text.secondary', fontSize: 13 }}>{c.creditsTotal}</TableCell>
-                    <TableCell align="center" sx={{ minWidth: 90 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <LinearProgress
-                          variant="determinate"
-                          value={pct}
-                          sx={{ flex: 1, height: 6, borderRadius: 3, bgcolor: 'action.hover' }}
-                          color={color}
-                        />
-                        <Typography variant="caption" sx={{ fontSize: 11, minWidth: 28 }}>{pct}%</Typography>
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
-    </SectionCard>
+    <Table size="small">
+      <TableHead>
+        <TableRow sx={{ '& th': { fontWeight: 700, fontSize: 11, color: 'text.secondary', textTransform: 'uppercase', letterSpacing: 0.5 } }}>
+          <TableCell>Member</TableCell>
+          <TableCell>Email</TableCell>
+          <TableCell align="center">Credits Left</TableCell>
+          <TableCell align="center">Credits Total</TableCell>
+          <TableCell align="center">Usage</TableCell>
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {credits.map((c) => {
+          const pct = c.creditsTotal > 0 ? Math.round(((c.creditsTotal - c.creditsLeft) / c.creditsTotal) * 100) : 0;
+          const color = c.creditsLeft === 0 ? 'error' : c.creditsLeft <= 2 ? 'warning' : 'success';
+          return (
+            <TableRow key={c.membershipId} hover>
+              <TableCell>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Avatar sx={{ width: 28, height: 28, fontSize: 11, bgcolor: 'primary.main' }}>
+                    {initials(c.firstName, c.lastName)}
+                  </Avatar>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                    {c.firstName} {c.lastName}
+                  </Typography>
+                </Box>
+              </TableCell>
+              <TableCell sx={{ color: 'text.secondary', fontSize: 13 }}>{c.email}</TableCell>
+              <TableCell align="center">
+                <Chip label={c.creditsLeft} size="small" color={color} sx={{ fontSize: 12, fontWeight: 700, minWidth: 36 }} />
+              </TableCell>
+              <TableCell align="center" sx={{ color: 'text.secondary', fontSize: 13 }}>{c.creditsTotal}</TableCell>
+              <TableCell align="center" sx={{ minWidth: 90 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <LinearProgress variant="determinate" value={pct} sx={{ flex: 1, height: 6, borderRadius: 3, bgcolor: 'action.hover' }} color={color} />
+                  <Typography variant="caption" sx={{ fontSize: 11, minWidth: 28 }}>{pct}%</Typography>
+                </Box>
+              </TableCell>
+            </TableRow>
+          );
+        })}
+      </TableBody>
+    </Table>
+  );
+}
+
+function MemberCreditsTable({ credits }: { credits: MemberCredits[] }) {
+  const [modalOpen, setModalOpen] = useState(false);
+  const MAX = 5;
+  const shown = credits.slice(0, MAX);
+  const hasMore = credits.length > MAX;
+
+  const handleExport = () => {
+    const rows = credits.map((c) => ({
+      Member: `${c.firstName} ${c.lastName}`,
+      Email: c.email,
+      'Credits Left': c.creditsLeft,
+      'Credits Total': c.creditsTotal,
+      'Usage %': c.creditsTotal > 0 ? Math.round(((c.creditsTotal - c.creditsLeft) / c.creditsTotal) * 100) : 0,
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Member Credits');
+    XLSX.writeFile(wb, 'member-credits.xlsx');
+  };
+
+  return (
+    <>
+      <SectionCard
+        title={`Member Class Credits · ${credits.length} active`}
+        action={
+          <Button size="small" startIcon={<Download fontSize="small" />} onClick={handleExport} sx={{ textTransform: 'none', fontSize: 12 }}>Excel</Button>
+        }
+      >
+        {credits.length === 0 ? (
+          <Box sx={{ py: 4, textAlign: 'center', color: 'text.secondary' }}>
+            <Typography variant="body2">No active memberships.</Typography>
+          </Box>
+        ) : (
+          <TableContainer sx={{ overflowX: 'auto' }}>
+            <CreditsTableBody credits={shown} />
+          </TableContainer>
+        )}
+        {hasMore && (
+          <Box sx={{ px: 2, py: 1, borderTop: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Typography variant="caption" color="text.secondary">Showing {MAX} of {credits.length}</Typography>
+            <Button size="small" startIcon={<OpenInFull fontSize="small" />} onClick={() => setModalOpen(true)} sx={{ textTransform: 'none', fontSize: 12 }}>
+              View all {credits.length}
+            </Button>
+          </Box>
+        )}
+      </SectionCard>
+
+      <Dialog open={modalOpen} onClose={() => setModalOpen(false)} maxWidth="lg" fullWidth>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', pb: 1 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700 }}>Member Class Credits</Typography>
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            <Button size="small" startIcon={<Download fontSize="small" />} onClick={handleExport} sx={{ textTransform: 'none', fontSize: 12 }}>Excel</Button>
+            <IconButton size="small" onClick={() => setModalOpen(false)}><Close fontSize="small" /></IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent sx={{ p: 0 }}>
+          <TableContainer sx={{ overflowX: 'auto' }}>
+            <CreditsTableBody credits={credits} />
+          </TableContainer>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

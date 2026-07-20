@@ -11,6 +11,7 @@ export interface ColDef<T> {
   align?: 'left' | 'center' | 'right';
   sx?: SxProps<Theme>;
   render: (row: T) => ReactNode;
+  exportValue?: (row: T) => string | number | null | undefined;
 }
 
 interface AppTableProps<T> {
@@ -19,6 +20,7 @@ interface AppTableProps<T> {
   loading?: boolean;
   getRowKey: (row: T) => string | number;
   emptyMessage?: string;
+  title?: string;
 }
 
 export function AppTable<T>({

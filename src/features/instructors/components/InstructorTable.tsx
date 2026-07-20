@@ -59,6 +59,7 @@ export function InstructorTable({ instructors, loading, onEdit, onDelete }: Prop
           </Box>
         </Box>
       ),
+      exportValue: (i) => `${i.firstName} ${i.lastName}`,
     },
     { key: 'email', header: 'Email', sx: { color: 'text.secondary', fontSize: 13 }, render: (i) => i.email },
     { key: 'specialty', header: 'Specialty', sx: { color: 'text.secondary', fontSize: 13 }, render: (i) => i.specialty ?? '—' },
@@ -68,6 +69,7 @@ export function InstructorTable({ instructors, loading, onEdit, onDelete }: Prop
         <Chip label={i.active ? 'Active' : 'Inactive'} size="small"
           color={i.active ? 'success' : 'default'} variant="outlined" />
       ),
+      exportValue: (i) => i.active ? 'Active' : 'Inactive',
     },
     { key: 'actions', header: '', align: 'right', render: (i) => <RowMenu instructor={i} onEdit={onEdit} onDelete={onDelete} isStaff={isStaff} /> },
   ];
@@ -79,6 +81,7 @@ export function InstructorTable({ instructors, loading, onEdit, onDelete }: Prop
       loading={loading}
       getRowKey={(i) => i.instructorId}
       emptyMessage="No instructors yet."
+      title="Instructors"
     />
   );
 }

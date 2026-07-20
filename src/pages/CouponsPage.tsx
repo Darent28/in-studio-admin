@@ -5,6 +5,7 @@ import {
 } from '@mui/material';
 import { Settings, Edit, Delete, CheckCircle, Cancel } from '@mui/icons-material';
 import { AppButton } from '../shared/components/AppButton';
+import { useAuthContext } from '../context/AuthContext';
 import { AppTable } from '../shared/components/AppTable';
 import { ConfirmDialog } from '../shared/components/ConfirmDialog';
 import { CouponFormModal } from '../features/coupons/components/CouponFormModal';
@@ -20,6 +21,8 @@ function fmtDate(iso: string | null) {
 
 function RowMenu({ coupon, onEdit, onDelete }: { coupon: Coupon; onEdit: (c: Coupon) => void; onDelete: (c: Coupon) => void }) {
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
+  const { user } = useAuthContext();
+  if (user?.role === 'STAFF') return null;
   return (
     <>
       <IconButton size="small" onClick={(e) => setAnchor(e.currentTarget)}><Settings fontSize="small" /></IconButton>
@@ -145,6 +148,7 @@ export function CouponsPage() {
         loading={isLoading}
         getRowKey={(c) => c.couponId}
         emptyMessage="No coupons yet."
+        title="Coupons"
       />
 
       <CouponFormModal

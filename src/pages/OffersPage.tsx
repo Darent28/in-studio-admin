@@ -35,6 +35,8 @@ function fmtDate(iso: string | null): string {
 
 function RowMenu({ offer, onEdit, onDelete }: { offer: Offer; onEdit: (o: Offer) => void; onDelete: (o: Offer) => void }) {
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
+  const { user } = useAuthContext();
+  if (user?.role === 'STAFF') return null;
   return (
     <>
       <IconButton size="small" onClick={(e) => setAnchor(e.currentTarget)}><Settings fontSize="small" /></IconButton>
@@ -287,6 +289,7 @@ export function OffersPage() {
         loading={isLoading}
         getRowKey={(o) => o.offerId}
         emptyMessage="No offers yet."
+        title="Offers"
       />
 
       <OfferFormModal

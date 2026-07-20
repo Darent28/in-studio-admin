@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { IconButton, ListItemIcon, Menu, MenuItem } from '@mui/material';
 import { Settings, Edit, Delete, CheckCircle, Cancel } from '@mui/icons-material';
 import { AppTable } from '../../../shared/components/AppTable';
+import { useAuthContext } from '../../../context/AuthContext';
 import type { ColDef } from '../../../shared/components/AppTable';
 import type { Room } from '../../../types/room';
 
@@ -14,6 +15,8 @@ interface Props {
 
 function RowMenu({ room, onEdit, onDelete }: { room: Room; onEdit: (r: Room) => void; onDelete: (r: Room) => void }) {
   const [anchor, setAnchor] = useState<null | HTMLElement>(null);
+  const { user } = useAuthContext();
+  if (user?.role === 'STAFF') return null;
   return (
     <>
       <IconButton size="small" onClick={(e) => setAnchor(e.currentTarget)}><Settings fontSize="small" /></IconButton>
@@ -37,7 +40,7 @@ export function RoomTable({ rooms, loading, onEdit, onDelete }: Props) {
     { key: 'capacity', header: 'Capacity', render: (r) => r.capacity },
     { key: 'location', header: 'Location', render: (r) => r.location ?? '—' },
     { key: 'equipment', header: 'Equipment', render: (r) => r.equipment ?? '—' },
-    { key: 'active', header: 'Active', render: (r) => r.active ? <CheckCircle fontSize="small" color="success" /> : <Cancel fontSize="small" color="disabled" /> },
+    { key: 'active', header: 'Active', render: (r) => r.active ? <CheckCircle fontSize="small" color="success" /> : <Cancel fontSize="small" color="disabled" />, exportValue: (r) => r.active ? 'Yes' : 'No' },
     { key: 'actions', header: '', align: 'right', render: (r) => <RowMenu room={r} onEdit={onEdit} onDelete={onDelete} /> },
   ];
 
@@ -48,6 +51,7 @@ export function RoomTable({ rooms, loading, onEdit, onDelete }: Props) {
       loading={loading}
       getRowKey={(r) => r.roomId}
       emptyMessage="No rooms yet."
+      title="Rooms"
     />
   );
 }

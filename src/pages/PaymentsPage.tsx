@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react';
+import * as XLSX from 'xlsx';
 import {
-  Box, Typography, Alert, Snackbar,
+  Box, Typography, Alert, Snackbar, Button,
   InputAdornment, TextField, ToggleButtonGroup, ToggleButton,
 } from '@mui/material';
-import { Search } from '@mui/icons-material';
+import { Search, Download } from '@mui/icons-material';
 import { AppButton } from '../shared/components/AppButton';
 import { AddPaymentModal } from '../features/payments/components/AddPaymentModal';
 import { PaymentTable } from '../features/payments/components/PaymentTable';
@@ -21,11 +22,15 @@ export function PaymentsPage() {
   const [errorMsg, setErrorMsg] = useState('');
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState<PaymentStatus | 'ALL'>('ALL');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return payments.filter((p: Payment) => {
       if (filterStatus !== 'ALL' && p.status !== filterStatus) return false;
+      if (dateFrom && p.createdAt && p.createdAt.slice(0, 10) < dateFrom) return false;
+      if (dateTo && p.createdAt && p.createdAt.slice(0, 10) > dateTo) return false;
       if (!q) return true;
       return (
         p.userFirstName.toLowerCase().includes(q) ||
@@ -34,7 +39,7 @@ export function PaymentsPage() {
         p.method.toLowerCase().includes(q)
       );
     });
-  }, [payments, search, filterStatus]);
+  }, [payments, search, filterStatus, dateFrom, dateTo]);
 
   const handleAddPayment = async (payload: PaymentPayload) => {
     setErrorMsg('');
@@ -74,10 +79,36 @@ export function PaymentsPage() {
             {counts.pending} pending · {counts.total} total
           </Typography>
         </Box>
-        <AppButton text="Add Payment" onClick={() => { setErrorMsg(''); setAddOpen(true); }} />
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<Download fontSize="small" />}
+            onClick={() => {
+              const rows = filtered.map((p: Payment) => ({
+                ID: `#${p.paymentId}`,
+                User: `${p.userFirstName} ${p.userLastName}`,
+                Plan: p.planName,
+                Amount: `${p.amount} ${p.currency}`,
+                Method: p.method,
+                Status: p.status,
+                Created: p.createdAt ? p.createdAt.slice(0, 10) : '—',
+                'Paid At': p.paidAt ? p.paidAt.slice(0, 10) : '—',
+              }));
+              const ws = XLSX.utils.json_to_sheet(rows);
+              const wb = XLSX.utils.book_new();
+              XLSX.utils.book_append_sheet(wb, ws, 'Payments');
+              XLSX.writeFile(wb, 'payments.xlsx');
+            }}
+            sx={{ textTransform: 'none', fontSize: 13 }}
+          >
+            Export Excel
+          </Button>
+          <AppButton text="Add Payment" onClick={() => { setErrorMsg(''); setAddOpen(true); }} />
+        </Box>
       </Box>
 
-      <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
+      <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap', alignItems: 'center' }}>
         <TextField
           size="small"
           placeholder="Search user, plan or method…"
@@ -85,6 +116,24 @@ export function PaymentsPage() {
           onChange={(e) => setSearch(e.target.value)}
           sx={{ width: { xs: '100%', sm: 280 } }}
           slotProps={{ input: { startAdornment: <InputAdornment position="start"><Search fontSize="small" /></InputAdornment> } }}
+        />
+        <TextField
+          size="small"
+          label="From"
+          type="date"
+          value={dateFrom}
+          onChange={(e) => setDateFrom(e.target.value)}
+          slotProps={{ inputLabel: { shrink: true } }}
+          sx={{ width: 150 }}
+        />
+        <TextField
+          size="small"
+          label="To"
+          type="date"
+          value={dateTo}
+          onChange={(e) => setDateTo(e.target.value)}
+          slotProps={{ inputLabel: { shrink: true } }}
+          sx={{ width: 150 }}
         />
         <ToggleButtonGroup
           value={filterStatus}

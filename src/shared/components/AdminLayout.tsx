@@ -10,7 +10,7 @@ import {
   Logout, People, MeetingRoom, CardMembership, EventNote,
   SportsGymnastics, Menu as MenuIcon, CreditCard, Payments,
   CalendarMonth, LocalOffer, Dashboard, Groups, School, AccountBalance,
-  ConfirmationNumber,
+  ConfirmationNumber, Settings,
 } from '@mui/icons-material';
 import { useAuthContext } from '../../context/AuthContext';
 
@@ -47,19 +47,25 @@ const SECTIONS: NavSection[] = [
     ],
   },
   {
-    label: 'Classes',
-    icon: <School fontSize="small" />,
+    label: 'Schedule',
+    icon: <CalendarMonth fontSize="small" />,
     items: [
-      { label: 'Sessions',  path: '/sessions', icon: <EventNote fontSize="small" /> },
-      { label: 'Schedule',  path: '/schedule', icon: <CalendarMonth fontSize="small" /> },
-      { label: 'Rooms',     path: '/rooms',    icon: <MeetingRoom fontSize="small" /> },
+      { label: 'Schedule', path: '/schedule', icon: <CalendarMonth fontSize="small" /> },
+    ],
+  },
+  {
+    label: 'Settings',
+    icon: <Settings fontSize="small" />,
+    items: [
+      { label: 'Sessions', path: '/sessions', icon: <EventNote fontSize="small" /> },
+      { label: 'Rooms',    path: '/rooms',    icon: <MeetingRoom fontSize="small" /> },
+      { label: 'Plans',    path: '/plans',    icon: <CardMembership fontSize="small" /> },
     ],
   },
   {
     label: 'Finance',
     icon: <AccountBalance fontSize="small" />,
     items: [
-      { label: 'Plans',    path: '/plans',    icon: <CardMembership fontSize="small" /> },
       { label: 'Offers',   path: '/offers',   icon: <LocalOffer fontSize="small" /> },
       { label: 'Coupons',  path: '/coupons',  icon: <ConfirmationNumber fontSize="small" /> },
       { label: 'Payments', path: '/payments', icon: <Payments fontSize="small" /> },

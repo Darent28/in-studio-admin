@@ -30,10 +30,11 @@ export function PaymentTable({ payments, loading, confirmingId, onConfirm }: Pro
     { key: 'user', header: 'User', sx: { fontWeight: 500 }, render: (p) => `${p.userFirstName} ${p.userLastName}` },
     { key: 'plan', header: 'Plan', render: (p) => p.planName },
     { key: 'amount', header: 'Amount', sx: { fontWeight: 600 }, render: (p) => fmtAmount(p.amount, p.currency) },
-    { key: 'method', header: 'Method', render: (p) => <Chip label={p.method} size="small" sx={{ fontSize: 11 }} /> },
+    { key: 'method', header: 'Method', render: (p) => <Chip label={p.method} size="small" sx={{ fontSize: 11 }} />, exportValue: (p) => p.method },
     {
       key: 'status', header: 'Status',
       render: (p) => <Chip label={p.status} size="small" color={STATUS_COLOR[p.status]} sx={{ fontSize: 11 }} />,
+      exportValue: (p) => p.status,
     },
     { key: 'created', header: 'Created', sx: { fontSize: 12, color: 'text.secondary' }, render: (p) => fmt(p.createdAt) },
     { key: 'paidAt', header: 'Paid at', sx: { fontSize: 12, color: 'text.secondary' }, render: (p) => fmt(p.paidAt) },
@@ -60,6 +61,7 @@ export function PaymentTable({ payments, loading, confirmingId, onConfirm }: Pro
       loading={loading}
       getRowKey={(p) => p.paymentId}
       emptyMessage="No payments found."
+      title="Payments"
     />
   );
 }

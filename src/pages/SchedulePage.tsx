@@ -1,12 +1,15 @@
 import { useState, useMemo } from 'react';
 import {
   Box, Typography, Accordion, AccordionSummary, AccordionDetails,
-  Chip, Avatar, CircularProgress, Alert, Divider,
-  FormControl, Select, MenuItem, IconButton,
+  Chip, Avatar, CircularProgress, Alert, Divider, Snackbar,
+  FormControl, Select, MenuItem, IconButton, Tooltip,
 } from '@mui/material';
-import { ExpandMore, ChevronLeft, ChevronRight } from '@mui/icons-material';
+import { ExpandMore, ChevronLeft, ChevronRight, Edit } from '@mui/icons-material';
 import { useSessionSchedule } from '../features/sessions/hooks/useSessionSchedule';
+import { useClassSessions, useUpdateSession } from '../features/sessions/hooks/useClassSessions';
+import { ClassSessionFormModal } from '../features/sessions/components/ClassSessionFormModal';
 import type { Attendee, SessionSchedule } from '../types/sessionSchedule';
+import type { ClassSession, ClassSessionPayload } from '../types/classSession';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -149,8 +152,13 @@ export function SchedulePage() {
   const [date, setDate] = useState(todayISO());
   const [instructor, setInstructor] = useState('ALL');
   const [room, setRoom] = useState('ALL');
+  const [editTarget, setEditTarget] = useState<ClassSession | null>(null);
+  const [formError, setFormError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
   const { data: sessions = [], isLoading, isError } = useSessionSchedule(date);
+  const { data: allSessions = [] } = useClassSessions();
+  const updateSession = useUpdateSession();
 
   const instructors = useMemo(() => {
     const seen = new Set<string>();
@@ -183,6 +191,23 @@ export function SchedulePage() {
     setDate(iso);
     setInstructor('ALL');
     setRoom('ALL');
+  };
+
+  const openEdit = (s: SessionSchedule) => {
+    const full = allSessions.find((c: ClassSession) => c.sessionId === s.sessionId);
+    if (full) { setFormError(''); setEditTarget(full); }
+  };
+
+  const handleEditSubmit = async (payload: ClassSessionPayload) => {
+    if (!editTarget) return;
+    setFormError('');
+    try {
+      await updateSession.mutateAsync({ id: editTarget.sessionId, payload });
+      setSuccessMsg('Session updated.');
+      setEditTarget(null);
+    } catch (err: any) {
+      setFormError(err.message ?? 'Something went wrong.');
+    }
   };
 
   const { year, month } = isoToDateParts(date);
@@ -277,6 +302,15 @@ export function SchedulePage() {
                         <WaitlistChip count={session.onHoldCount} />
                         <Chip label={`${session.reservedCount}/${session.capacity}`} size="small" variant="outlined"
                           sx={{ fontSize: 11, color: 'text.secondary' }} />
+                        <Tooltip title="Edit session">
+                          <IconButton
+                            size="small"
+                            onClick={(e) => { e.stopPropagation(); openEdit(session); }}
+                            sx={{ ml: 0.5 }}
+                          >
+                            <Edit fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
                       </Box>
                     </Box>
                   </AccordionSummary>
@@ -313,6 +347,20 @@ export function SchedulePage() {
           )}
         </Box>
       </Box>
+
+      <ClassSessionFormModal
+        open={!!editTarget}
+        onClose={() => setEditTarget(null)}
+        onSubmit={handleEditSubmit}
+        session={editTarget}
+        loading={updateSession.isPending}
+        error={formError}
+      />
+
+      <Snackbar open={!!successMsg} autoHideDuration={3000} onClose={() => setSuccessMsg('')}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}>
+        <Alert severity="success" onClose={() => setSuccessMsg('')} sx={{ borderRadius: 2 }}>{successMsg}</Alert>
+      </Snackbar>
     </Box>
   );
 }

@@ -57,9 +57,9 @@ export function UserTable({ users, loading, onEdit, onDelete, onProfile }: Props
     { key: 'name', header: 'Name', sx: { fontWeight: 500 }, render: (u) => `${u.firstName} ${u.lastName}` },
     { key: 'email', header: 'Email', render: (u) => u.email },
     { key: 'phone', header: 'Phone', render: (u) => u.phone ?? '—' },
-    { key: 'role', header: 'Role', render: (u) => <Chip label={u.role} size="small" color={ROLE_COLORS[u.role] ?? 'default'} sx={{ textTransform: 'capitalize', fontSize: 11 }} /> },
-    { key: 'active', header: 'Active', render: (u) => u.active ? <CheckCircle fontSize="small" color="success" /> : <Cancel fontSize="small" color="disabled" /> },
-    { key: 'verified', header: 'Verified', render: (u) => u.emailVerified ? <CheckCircle fontSize="small" color="success" /> : <Cancel fontSize="small" color="disabled" /> },
+    { key: 'role', header: 'Role', render: (u) => <Chip label={u.role} size="small" color={ROLE_COLORS[u.role] ?? 'default'} sx={{ textTransform: 'capitalize', fontSize: 11 }} />, exportValue: (u) => u.role },
+    { key: 'active', header: 'Active', render: (u) => u.active ? <CheckCircle fontSize="small" color="success" /> : <Cancel fontSize="small" color="disabled" />, exportValue: (u) => u.active ? 'Yes' : 'No' },
+    { key: 'verified', header: 'Verified', render: (u) => u.emailVerified ? <CheckCircle fontSize="small" color="success" /> : <Cancel fontSize="small" color="disabled" />, exportValue: (u) => u.emailVerified ? 'Yes' : 'No' },
     { key: 'created', header: 'Created', sx: { color: 'text.secondary', fontSize: 13 }, render: (u) => new Date(u.createdAt).toLocaleDateString() },
     { key: 'actions', header: '', align: 'right', render: (u) => <RowMenu user={u} onEdit={onEdit} onDelete={onDelete} onProfile={onProfile} isStaff={isStaff} /> },
   ];
@@ -71,6 +71,7 @@ export function UserTable({ users, loading, onEdit, onDelete, onProfile }: Props
       loading={loading}
       getRowKey={(u) => u.userId}
       emptyMessage="No users yet."
+      title="Members"
     />
   );
 }
