@@ -5,6 +5,7 @@ export interface Attendee {
   lastName: string;
   email: string;
   status: 'RESERVED' | 'ON_HOLD';
+  spotNumber: string | null;
 }
 
 export interface SessionSchedule {

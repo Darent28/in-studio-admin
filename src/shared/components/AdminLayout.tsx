@@ -10,7 +10,7 @@ import {
   Logout, People, MeetingRoom, CardMembership, EventNote,
   SportsGymnastics, Menu as MenuIcon, CreditCard, Payments,
   CalendarMonth, LocalOffer, Dashboard, Groups, School, AccountBalance,
-  ConfirmationNumber, Settings,
+  ConfirmationNumber, Settings, Assessment,
 } from '@mui/icons-material';
 import { useAuthContext } from '../../context/AuthContext';
 
@@ -38,6 +38,13 @@ const SECTIONS: NavSection[] = [
     ],
   },
   {
+    label: 'Schedule',
+    icon: <CalendarMonth fontSize="small" />,
+    items: [
+      { label: 'Schedule', path: '/schedule', icon: <CalendarMonth fontSize="small" /> },
+    ],
+  },
+  {
     label: 'Users',
     icon: <Groups fontSize="small" />,
     items: [
@@ -47,10 +54,12 @@ const SECTIONS: NavSection[] = [
     ],
   },
   {
-    label: 'Schedule',
-    icon: <CalendarMonth fontSize="small" />,
+    label: 'Finance',
+    icon: <AccountBalance fontSize="small" />,
     items: [
-      { label: 'Schedule', path: '/schedule', icon: <CalendarMonth fontSize="small" /> },
+      { label: 'Offers',   path: '/offers',   icon: <LocalOffer fontSize="small" /> },
+      { label: 'Coupons',  path: '/coupons',  icon: <ConfirmationNumber fontSize="small" /> },
+      { label: 'Payments', path: '/payments', icon: <Payments fontSize="small" /> },
     ],
   },
   {
@@ -63,12 +72,11 @@ const SECTIONS: NavSection[] = [
     ],
   },
   {
-    label: 'Finance',
-    icon: <AccountBalance fontSize="small" />,
+    label: 'Reports',
+    icon: <Assessment fontSize="small" />,
     items: [
-      { label: 'Offers',   path: '/offers',   icon: <LocalOffer fontSize="small" /> },
-      { label: 'Coupons',  path: '/coupons',  icon: <ConfirmationNumber fontSize="small" /> },
-      { label: 'Payments', path: '/payments', icon: <Payments fontSize="small" /> },
+      { label: 'Basic Report',    path: '/reports/basic',   icon: <Assessment fontSize="small" /> },
+      { label: 'Advance Report', path: '/reports/advance', icon: <Assessment fontSize="small" /> },
     ],
   },
 ];

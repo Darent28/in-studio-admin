@@ -28,5 +28,4 @@ export interface ClassSessionPayload {
   title?: string;
   status?: SessionStatus;
   notes?: string;
-  blockedSeats?: string[];
 }

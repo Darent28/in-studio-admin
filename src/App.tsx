@@ -18,6 +18,8 @@ import { PaymentsPage } from './pages/PaymentsPage';
 import { SchedulePage } from './pages/SchedulePage';
 import { OffersPage } from './pages/OffersPage';
 import { CouponsPage } from './pages/CouponsPage';
+import { BasicReportPage } from './pages/BasicReportPage';
+import { AdvanceReportPage } from './pages/AdvanceReportPage';
 
 function ProtectedRoute({ children }: { children: React.ReactElement }) {
   const { isAuthenticated } = useAuthContext();
@@ -62,6 +64,8 @@ function AppRoutes() {
         <Route path="schedule" element={<SchedulePage />} />
         <Route path="offers" element={<OffersPage />} />
         <Route path="coupons" element={<CouponsPage />} />
+        <Route path="reports/basic" element={<BasicReportPage />} />
+        <Route path="reports/advance" element={<AdvanceReportPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

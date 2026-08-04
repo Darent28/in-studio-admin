@@ -334,6 +334,9 @@ export function SchedulePage() {
                               </Typography>
                               <Typography variant="caption" color="text.secondary" noWrap>{a.email}</Typography>
                             </Box>
+                            {a.spotNumber && (
+                              <Chip label={`Spot ${a.spotNumber}`} size="small" variant="outlined" sx={{ fontSize: 11 }} />
+                            )}
                             <Chip label={a.status === 'ON_HOLD' ? 'Waitlist' : 'Reserved'} size="small"
                               color={a.status === 'ON_HOLD' ? 'default' : 'success'} sx={{ fontSize: 11 }} />
                           </Box>
