@@ -10,10 +10,9 @@ import { AppButton } from '../shared/components/AppButton';
 import { AppTable } from '../shared/components/AppTable';
 import { OfferFormModal } from '../features/offers/components/OfferFormModal';
 import { ConfirmDialog } from '../shared/components/ConfirmDialog';
-import { useOffers, useCreateOffer, useUpdateOffer, useDeleteOffer } from '../features/offers/hooks/useOffers';
+import { useOffers, useCreateOffer, useUpdateOffer, useDeleteOffer, validateOffer } from '../features/offers/hooks/useOffers';
 import { usePlans } from '../features/plans/hooks/usePlans';
 import { useAuthContext } from '../context/AuthContext';
-import { api } from '../lib/api';
 import type { ColDef } from '../shared/components/AppTable';
 import type { Offer, OfferPayload } from '../types/offer';
 
@@ -71,7 +70,7 @@ function ValidateCard({ plans }: { plans: Array<{ planId: number; name: string }
     if (!planId || !date || !time) return;
     setLoading(true);
     try {
-      const offer = await api.admin.offers.validate(planId as number, date, time, token!);
+      const offer = await validateOffer(planId as number, date, time, token!);
       setResult(offer ?? 'none');
     } catch {
       setResult('none');

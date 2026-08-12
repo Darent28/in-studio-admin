@@ -1,20 +1,27 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '../../../lib/api';
+import { request, authHeader } from '../../../lib/api';
 import { useAuthContext } from '../../../context/AuthContext';
-import type { CouponPayload } from '../../../types/coupon';
+import type { Coupon, CouponPayload } from '../../../types/coupon';
+
+const couponsApi = {
+  getAll: (token: string) => request<Coupon[]>('/admin/coupons', { headers: authHeader(token) }),
+  create: (payload: CouponPayload, token: string) => request<Coupon>('/admin/coupons', { method: 'POST', body: JSON.stringify(payload), headers: authHeader(token) }),
+  update: (id: number, payload: CouponPayload, token: string) => request<Coupon>(`/admin/coupons/${id}`, { method: 'PUT', body: JSON.stringify(payload), headers: authHeader(token) }),
+  delete: (id: number, token: string) => request<void>(`/admin/coupons/${id}`, { method: 'DELETE', headers: authHeader(token) }),
+};
 
 const KEY = ['coupons'];
 
 export function useCoupons() {
   const { token } = useAuthContext();
-  return useQuery({ queryKey: KEY, queryFn: () => api.admin.coupons.getAll(token!), staleTime: 30_000 });
+  return useQuery({ queryKey: KEY, queryFn: () => couponsApi.getAll(token!), staleTime: 30_000 });
 }
 
 export function useCreateCoupon() {
   const { token } = useAuthContext();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (payload: CouponPayload) => api.admin.coupons.create(payload, token!),
+    mutationFn: (payload: CouponPayload) => couponsApi.create(payload, token!),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
   });
 }
@@ -24,7 +31,7 @@ export function useUpdateCoupon() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, payload }: { id: number; payload: CouponPayload }) =>
-      api.admin.coupons.update(id, payload, token!),
+      couponsApi.update(id, payload, token!),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
   });
 }
@@ -33,7 +40,7 @@ export function useDeleteCoupon() {
   const { token } = useAuthContext();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => api.admin.coupons.delete(id, token!),
+    mutationFn: (id: number) => couponsApi.delete(id, token!),
     onSuccess: () => qc.invalidateQueries({ queryKey: KEY }),
   });
 }

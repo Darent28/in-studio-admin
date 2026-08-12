@@ -1,8 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
-import { api } from '../../../lib/api';
+import { request, authHeader } from '../../../lib/api';
 import { useAuthContext } from '../../../context/AuthContext';
+import type { Instructor } from '../../../types/instructor';
+
+const instructorsApi = {
+  getAll: (token: string) => request<Instructor[]>('/admin/instructors', { headers: authHeader(token) }),
+};
 
 export function useInstructors() {
   const { token } = useAuthContext();
-  return useQuery({ queryKey: ['admin-instructors'], queryFn: () => api.admin.instructors.getAll(token!), enabled: !!token });
+  return useQuery({ queryKey: ['admin-instructors'], queryFn: () => instructorsApi.getAll(token!), enabled: !!token });
 }
